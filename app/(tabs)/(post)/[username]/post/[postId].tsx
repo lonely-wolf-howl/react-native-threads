@@ -1,9 +1,9 @@
 import { Text, View } from "react-native";
 
-export default function NotFound() {
+export default function Post() {
   return (
     <View>
-      <Text>404 Not Found</Text>
+      <Text>Post Detail Page</Text>
     </View>
   );
 }
