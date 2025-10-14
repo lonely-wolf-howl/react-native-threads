@@ -30,7 +30,9 @@ export default function Index() {
     >
       <View>
         <TouchableOpacity onPress={() => router.replace(`/activity`)}>
-          <Text style={{ color: pathname === "/activity" ? "black" : "gray" }}>
+          <Text
+            style={{ color: pathname === "/activity" ? "#007AFF" : "black" }}
+          >
             All
           </Text>
         </TouchableOpacity>
@@ -39,7 +41,7 @@ export default function Index() {
         <TouchableOpacity onPress={() => router.replace(`/activity/follows`)}>
           <Text
             style={{
-              color: pathname === "/activity/follows" ? "black" : "gray",
+              color: pathname === "/activity/follows" ? "#007AFF" : "black",
             }}
           >
             Follows
@@ -50,7 +52,7 @@ export default function Index() {
         <TouchableOpacity onPress={() => router.replace(`/activity/replies`)}>
           <Text
             style={{
-              color: pathname === "/activity/replies" ? "black" : "gray",
+              color: pathname === "/activity/replies" ? "#007AFF" : "black",
             }}
           >
             Replies
@@ -61,7 +63,7 @@ export default function Index() {
         <TouchableOpacity onPress={() => router.replace(`/activity/mentions`)}>
           <Text
             style={{
-              color: pathname === "/activity/mentions" ? "black" : "gray",
+              color: pathname === "/activity/mentions" ? "#007AFF" : "black",
             }}
           >
             Mentions
@@ -72,7 +74,7 @@ export default function Index() {
         <TouchableOpacity onPress={() => router.replace(`/activity/quotes`)}>
           <Text
             style={{
-              color: pathname === "/activity/quotes" ? "black" : "gray",
+              color: pathname === "/activity/quotes" ? "#007AFF" : "black",
             }}
           >
             Quotes
@@ -83,7 +85,7 @@ export default function Index() {
         <TouchableOpacity onPress={() => router.replace(`/activity/reposts`)}>
           <Text
             style={{
-              color: pathname === "/activity/reposts" ? "black" : "gray",
+              color: pathname === "/activity/reposts" ? "#007AFF" : "black",
             }}
           >
             Reposts
@@ -94,7 +96,7 @@ export default function Index() {
         <TouchableOpacity onPress={() => router.replace(`/activity/verified`)}>
           <Text
             style={{
-              color: pathname === "/activity/verified" ? "black" : "gray",
+              color: pathname === "/activity/verified" ? "#007AFF" : "black",
             }}
           >
             Verified
