@@ -1,4 +1,4 @@
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
 import { useState } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
@@ -19,6 +19,7 @@ export default function TabLayout() {
   return (
     <>
       <Tabs
+        backBehavior="history"
         screenOptions={{
           headerShown: false,
         }}
@@ -28,10 +29,11 @@ export default function TabLayout() {
           options={{
             tabBarLabel: () => null,
             tabBarIcon: ({ focused }) => (
-              <Feather
-                name="home"
+              <Ionicons
+                name={focused ? "planet" : "planet-outline"}
                 color={focused ? "#007AFF" : "black"}
                 size={26}
+                st
               />
             ),
           }}
@@ -42,7 +44,7 @@ export default function TabLayout() {
             tabBarLabel: () => null,
             tabBarIcon: ({ focused }) => (
               <Ionicons
-                name="search-outline"
+                name={focused ? "search" : "search-outline"}
                 color={focused ? "#007AFF" : "black"}
                 size={26}
               />

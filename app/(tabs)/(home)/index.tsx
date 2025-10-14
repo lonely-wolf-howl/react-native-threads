@@ -14,14 +14,14 @@ export default function Index() {
       }}
     >
       <View>
-        <TouchableOpacity onPress={() => router.navigate(`/`)}>
+        <TouchableOpacity onPress={() => router.replace(`/`)}>
           <Text style={{ color: pathname === "/" ? "#007AFF" : "black" }}>
             For you
           </Text>
         </TouchableOpacity>
       </View>
       <View>
-        <TouchableOpacity onPress={() => router.navigate(`/following`)}>
+        <TouchableOpacity onPress={() => router.replace(`/following`)}>
           <Text
             style={{ color: pathname === "/following" ? "#007AFF" : "black" }}
           >
