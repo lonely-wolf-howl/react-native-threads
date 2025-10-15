@@ -20,7 +20,7 @@ interface Thread {
   id: string;
   text: string;
   hashtag?: string;
-  location?: [number, number];
+  location?: string;
   imageUris: string[];
 }
 
@@ -42,7 +42,10 @@ export function ListFooter({
       <View>
         <Pressable onPress={addThread} style={styles.input}>
           <Text
-            style={{ color: canAddThread ? "#999" : "#aaa", fontWeight: "600" }}
+            style={{
+              fontWeight: "600",
+              color: canAddThread ? "#999" : "#aaa",
+            }}
           >
             Add to thread
           </Text>
@@ -54,16 +57,16 @@ export function ListFooter({
 
 export default function Modal() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [threads, setThreads] = useState<Thread[]>([
     { id: Date.now().toString(), text: "", imageUris: [] },
   ]);
-  const insets = useSafeAreaInsets();
-  const [replyOption, setReplyOption] = useState("Anyone");
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
-  const [activeDropdownThreadId, setActiveDropdownThreadId] = useState<
+  const [isThreadDropdownVisible, setIsThreadDropdownVisible] = useState<
     string | null
   >(null);
+  const [replyOption, setReplyOption] = useState("Anyone");
+  const [isReplyDropdownVisible, setIsReplyDropdownVisible] = useState(false);
 
   const replyOptions = ["Anyone", "Profiles you follow", "Mentioned only"];
 
@@ -84,10 +87,6 @@ export default function Modal() {
 
   const canAddThread = (threads.at(-1)?.text.trim().length ?? 0) > 0;
   const canPost = threads.every((thread) => thread.text.trim().length > 0);
-
-  const addImageToThread = (id: string, uri: string) => {};
-
-  const addLocationToThread = (id: string, location: [number, number]) => {};
 
   const removeThread = (id: string) => {
     setThreads((prevThreads) =>
@@ -123,14 +122,20 @@ export default function Modal() {
       return;
     }
 
-    const location = await Location.getCurrentPositionAsync({});
+    // const location = await Location.getCurrentPositionAsync({});
+
+    const address = await Location.reverseGeocodeAsync({
+      latitude: 36.362,
+      longitude: 127.344,
+    });
 
     setThreads((prevThreads) =>
       prevThreads.map((thread) =>
         thread.id === id
           ? {
               ...thread,
-              location: [location.coords.latitude, location.coords.longitude],
+              // location: [location.coords.latitude, location.coords.longitude],
+              location: address[0].formattedAddress as string,
             }
           : thread
       )
@@ -150,7 +155,7 @@ export default function Modal() {
           source={require("../assets/images/react-logo.png")}
           style={styles.avatar}
         />
-        <View style={styles.threadLine} />
+        {index === threads.length - 1 && <View style={styles.threadLine} />}
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.userInfoContainer}>
@@ -204,42 +209,45 @@ export default function Modal() {
         {item.location && (
           <View style={styles.locationContainer}>
             <Text style={styles.locationText}>
-              {item.location[0]}, {item.location[1]}
+              {/* {item.location[0]}, {item.location[1]} */}
+              {item.location}
             </Text>
           </View>
         )}
-        <View style={styles.actionButtons}>
-          <Pressable
-            style={styles.actionButton}
-            onPress={() => !isPosting && pickImage(item.id)}
-          >
-            <Ionicons name="image-outline" size={24} color="#777" />
-          </Pressable>
-          <Pressable
-            style={styles.actionButton}
-            onPress={() => {
-              if (!isPosting) {
-                setActiveDropdownThreadId(
-                  activeDropdownThreadId === item.id ? null : item.id
-                );
-              }
-            }}
-          >
-            <Ionicons
-              name="ellipsis-horizontal-circle-outline"
-              size={24}
-              color="#777"
-            />
-          </Pressable>
-        </View>
+        {index === threads.length - 1 && (
+          <View style={styles.actionButtons}>
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => !isPosting && pickImage(item.id)}
+            >
+              <Ionicons name="image-outline" size={24} color="#777" />
+            </Pressable>
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => {
+                if (!isPosting) {
+                  setIsThreadDropdownVisible(
+                    isThreadDropdownVisible === item.id ? null : item.id
+                  );
+                }
+              }}
+            >
+              <Ionicons
+                name="ellipsis-horizontal-circle-outline"
+                size={24}
+                color="#777"
+              />
+            </Pressable>
+          </View>
+        )}
 
-        {activeDropdownThreadId === item.id && (
+        {isThreadDropdownVisible === item.id && (
           <View style={styles.actionButtonDropdownMenu}>
             <Pressable
               style={styles.actionButtonDropdownOption}
               onPress={() => {
                 takePhoto(item.id);
-                setActiveDropdownThreadId(null);
+                setIsThreadDropdownVisible(null);
               }}
             >
               <Text style={styles.actionButtonDropdownOptionText}>Camera</Text>
@@ -249,7 +257,7 @@ export default function Modal() {
               style={styles.actionButtonDropdownOption}
               onPress={() => {
                 getMyLocation(item.id);
-                setActiveDropdownThreadId(null);
+                setIsThreadDropdownVisible(null);
               }}
             >
               <Text style={styles.actionButtonDropdownOptionText}>
@@ -302,7 +310,7 @@ export default function Modal() {
       />
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
-        <Pressable onPress={() => setIsDropdownVisible(true)}>
+        <Pressable onPress={() => setIsReplyDropdownVisible(true)}>
           <Text style={styles.footerText}>
             {replyOption} can reply and quote
           </Text>
@@ -371,8 +379,8 @@ const styles = StyleSheet.create({
   // avatar
   avatarContainer: {
     alignItems: "center",
+    justifyContent: "flex-start",
     marginRight: 12,
-    paddingTop: 2,
   },
   avatar: {
     width: 36,
@@ -381,7 +389,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#555",
   },
   threadLine: {
-    width: 1.5,
+    width: 2,
     flexGrow: 1,
     marginTop: 8,
     backgroundColor: "#aaa",
@@ -390,7 +398,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     position: "relative",
     flex: 1,
-    paddingBottom: 12,
   },
   userInfoContainer: {
     flexDirection: "row",
@@ -398,20 +405,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   username: {
+    marginTop: -2,
+    marginLeft: 4,
     fontSize: 14,
     fontWeight: "800",
-    marginLeft: 4,
     color: "#000",
   },
   removeButton: {
     marginRight: -4,
     marginLeft: 8,
-    padding: 4,
   },
   input: {
     minHeight: 24,
     paddingTop: 2,
-    paddingBottom: 16,
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 20,
@@ -423,6 +429,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   actionButton: {
+    marginLeft: 2,
     marginRight: 16,
   },
   imagePreviewContainer: {
@@ -452,9 +459,11 @@ const styles = StyleSheet.create({
   locationContainer: {
     marginTop: 4,
     marginBottom: 4,
+    marginLeft: 4,
   },
   locationText: {
-    fontSize: 16,
+    fontSize: 10,
+    fontWeight: "600",
     color: "#8e8e93",
   },
   // dropdown
@@ -493,8 +502,9 @@ const styles = StyleSheet.create({
   // list footer
   listFooter: {
     flexDirection: "row",
-    paddingLeft: 30,
-    paddingTop: 10,
+    paddingLeft: 32,
+    paddingTop: 4,
+    paddingBottom: 12,
   },
   listFooterAvatar: {
     marginRight: 10,
