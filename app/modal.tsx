@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
+import * as MediaLibrary from "expo-media-library";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -8,11 +10,13 @@ import {
   Image,
   Linking,
   Pressable,
+  Modal as RNModal,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -21,7 +25,7 @@ interface Thread {
   text: string;
   hashtag?: string;
   location?: string;
-  imageUris: string[];
+  imageUrls: string[];
 }
 
 export function ListFooter({
@@ -56,15 +60,21 @@ export function ListFooter({
 }
 
 export default function Modal() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [threads, setThreads] = useState<Thread[]>([
-    { id: Date.now().toString(), text: "", imageUris: [] },
+    { id: Date.now().toString(), text: "", imageUrls: [] },
   ]);
   const [isPosting, setIsPosting] = useState(false);
-  const [isThreadDropdownVisible, setIsThreadDropdownVisible] = useState<
-    string | null
-  >(null);
+  const [isActiveDropdownVisible, setIsActiveDropdownVisible] = useState(false);
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+  const [buttonLayout, setButtonLayout] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [replyOption, setReplyOption] = useState("Anyone");
   const [isReplyDropdownVisible, setIsReplyDropdownVisible] = useState(false);
 
@@ -85,8 +95,17 @@ export default function Modal() {
     );
   };
 
-  const canAddThread = (threads.at(-1)?.text.trim().length ?? 0) > 0;
-  const canPost = threads.every((thread) => thread.text.trim().length > 0);
+  const hasValidContent = (thread: Thread): boolean => {
+    const hasText = thread.text.trim().length > 0;
+    const hasImages = thread.imageUrls.length > 0;
+
+    return hasText || hasImages;
+  };
+
+  const lastThread = threads.at(-1);
+  const canAddThread = lastThread ? hasValidContent(lastThread) : false;
+
+  const canPost = threads.every(hasValidContent);
 
   const removeThread = (id: string) => {
     setThreads((prevThreads) =>
@@ -94,11 +113,97 @@ export default function Modal() {
     );
   };
 
-  const pickImage = async (id: string) => {};
+  const pickImage = async (id: string) => {
+    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-  const takePhoto = async (id: string) => {};
+    if (status !== "granted") {
+      Alert.alert(
+        "Photos permission not granted",
+        "Please grant photos permission to use this feature",
+        [
+          { text: "Open settings", onPress: () => Linking.openSettings() },
+          { text: "Cancel" },
+        ]
+      );
+      return;
+    }
 
-  const removeImageFromThread = (id: string, uriToRemove: string) => {};
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "livePhotos", "videos"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+    });
+
+    if (!result.canceled) {
+      setThreads((prevThreads) =>
+        prevThreads.map((thread) =>
+          thread.id === id
+            ? {
+                ...thread,
+                imageUrls: thread.imageUrls.concat(
+                  result.assets?.map((asset) => asset.uri) ?? []
+                ),
+              }
+            : thread
+        )
+      );
+    }
+  };
+
+  const takePhoto = async (id: string) => {
+    let { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert(
+        "Camera permission not granted",
+        "Please grant camera permission to use this feature",
+        [
+          { text: "Open settings", onPress: () => Linking.openSettings() },
+          { text: "Cancel" },
+        ]
+      );
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images", "livePhotos", "videos"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+    });
+
+    let { status: saveStatus } = await MediaLibrary.requestPermissionsAsync();
+    if (saveStatus === "granted" && result.assets?.[0].uri) {
+      MediaLibrary.saveToLibraryAsync(result.assets[0].uri);
+    }
+
+    if (!result.canceled) {
+      setThreads((prevThreads) =>
+        prevThreads.map((thread) =>
+          thread.id === id
+            ? {
+                ...thread,
+                imageUrls: thread.imageUrls.concat(
+                  result.assets?.map((asset) => asset.uri) ?? []
+                ),
+              }
+            : thread
+        )
+      );
+    }
+  };
+
+  const removeImageFromThread = (id: string, uriToRemove: string) => {
+    setThreads((prevThreads) =>
+      prevThreads.map((thread) =>
+        thread.id === id
+          ? {
+              ...thread,
+              imageUrls: thread.imageUrls.filter((uri) => uri !== uriToRemove),
+            }
+          : thread
+      )
+    );
+  };
 
   const getMyLocation = async (id: string) => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -108,15 +213,8 @@ export default function Modal() {
         "Location permission not granted",
         "Please grant location permission to use this feature",
         [
-          {
-            text: "Open settings",
-            onPress: () => {
-              Linking.openSettings();
-            },
-          },
-          {
-            text: "Cancel",
-          },
+          { text: "Open settings", onPress: () => Linking.openSettings() },
+          { text: "Cancel" },
         ]
       );
       return;
@@ -178,9 +276,9 @@ export default function Modal() {
           onChangeText={(text) => updateThreadText(item.id, text)}
           multiline
         />
-        {item.imageUris && item.imageUris.length > 0 && (
+        {item.imageUrls && item.imageUrls.length > 0 && (
           <FlatList
-            data={item.imageUris}
+            data={item.imageUrls}
             renderItem={({ item: uri, index: _ }) => (
               <View style={styles.imagePreviewContainer}>
                 <Image source={{ uri }} style={styles.imagePreview} />
@@ -224,11 +322,13 @@ export default function Modal() {
             </Pressable>
             <Pressable
               style={styles.actionButton}
-              onPress={() => {
+              onPress={(event) => {
                 if (!isPosting) {
-                  setIsThreadDropdownVisible(
-                    isThreadDropdownVisible === item.id ? null : item.id
-                  );
+                  event.currentTarget.measureInWindow((x, y, width, height) => {
+                    setButtonLayout({ x, y, width, height });
+                    setActiveThreadId(item.id);
+                    setIsActiveDropdownVisible(true);
+                  });
                 }
               }}
             >
@@ -237,33 +337,6 @@ export default function Modal() {
                 size={24}
                 color="#777"
               />
-            </Pressable>
-          </View>
-        )}
-
-        {isThreadDropdownVisible === item.id && (
-          <View style={styles.actionButtonDropdownMenu}>
-            <Pressable
-              style={styles.actionButtonDropdownOption}
-              onPress={() => {
-                takePhoto(item.id);
-                setIsThreadDropdownVisible(null);
-              }}
-            >
-              <Text style={styles.actionButtonDropdownOptionText}>Camera</Text>
-              <Ionicons name="camera-outline" size={24} color="#000" />
-            </Pressable>
-            <Pressable
-              style={styles.actionButtonDropdownOption}
-              onPress={() => {
-                getMyLocation(item.id);
-                setIsThreadDropdownVisible(null);
-              }}
-            >
-              <Text style={styles.actionButtonDropdownOptionText}>
-                Location
-              </Text>
-              <Ionicons name="location-outline" size={24} color="#000" />
             </Pressable>
           </View>
         )}
@@ -298,7 +371,7 @@ export default function Modal() {
               if (canAddThread) {
                 setThreads((prevThreads) => [
                   ...prevThreads,
-                  { id: Date.now().toString(), text: "", imageUris: [] },
+                  { id: Date.now().toString(), text: "", imageUrls: [] },
                 ]);
               }
             }}
@@ -308,6 +381,131 @@ export default function Modal() {
         contentContainerStyle={{ backgroundColor: "#ddd" }}
         keyboardShouldPersistTaps="handled"
       />
+
+      <RNModal
+        transparent={true}
+        visible={isReplyDropdownVisible}
+        animationType="fade"
+        onRequestClose={() => setIsReplyDropdownVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsReplyDropdownVisible(false)}
+        >
+          <View
+            style={[
+              styles.dropdownContainer,
+              { bottom: insets.bottom + 30 },
+              colorScheme === "dark"
+                ? styles.dropdownContainerDark
+                : styles.dropdownContainerLight,
+            ]}
+          >
+            {replyOptions.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.dropdownOption,
+                  option === replyOption && styles.selectedOption,
+                ]}
+                onPress={() => {
+                  setReplyOption(option);
+                  setIsReplyDropdownVisible(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.dropdownOptionText,
+                    colorScheme === "dark"
+                      ? styles.dropdownOptionTextDark
+                      : styles.dropdownOptionTextLight,
+                    option === replyOption && styles.selectedOptionText,
+                  ]}
+                >
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </RNModal>
+
+      <RNModal
+        transparent={true}
+        visible={isActiveDropdownVisible}
+        animationType="fade"
+        onRequestClose={() => {
+          setIsActiveDropdownVisible(false);
+          setButtonLayout(null);
+        }}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => {
+            setIsActiveDropdownVisible(false);
+            setButtonLayout(null);
+          }}
+        >
+          <View
+            style={[
+              styles.dropdownContainer,
+              buttonLayout && {
+                position: "absolute",
+                top: buttonLayout.y + buttonLayout.height + 5,
+                left: buttonLayout.x - 10,
+              },
+              colorScheme === "dark"
+                ? styles.dropdownContainerDark
+                : styles.dropdownContainerLight,
+            ]}
+          >
+            <Pressable
+              style={styles.dropdownOption}
+              onPress={() => {
+                if (activeThreadId) {
+                  takePhoto(activeThreadId);
+                }
+                setIsActiveDropdownVisible(false);
+                setActiveThreadId(null);
+                setButtonLayout(null);
+              }}
+            >
+              <Text
+                style={[
+                  styles.dropdownOptionText,
+                  colorScheme === "dark"
+                    ? styles.dropdownOptionTextDark
+                    : styles.dropdownOptionTextLight,
+                ]}
+              >
+                Camera
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.dropdownOption}
+              onPress={() => {
+                if (activeThreadId) {
+                  getMyLocation(activeThreadId);
+                }
+                setIsActiveDropdownVisible(false);
+                setActiveThreadId(null);
+                setButtonLayout(null);
+              }}
+            >
+              <Text
+                style={[
+                  styles.dropdownOptionText,
+                  colorScheme === "dark"
+                    ? styles.dropdownOptionTextDark
+                    : styles.dropdownOptionTextLight,
+                ]}
+              >
+                Location
+              </Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </RNModal>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <Pressable onPress={() => setIsReplyDropdownVisible(true)}>
@@ -466,39 +664,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#8e8e93",
   },
-  // dropdown
-  actionButtonDropdownMenu: {
-    position: "absolute",
-    top: 90,
-    right: 100,
-    zIndex: 1000,
-    minWidth: 180,
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  actionButtonDropdownOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e5e5e5",
-  },
-  actionButtonDropdownOptionText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#000",
-  },
   // list footer
   listFooter: {
     flexDirection: "row",
@@ -547,5 +712,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#fff",
+  },
+  // reply
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "flex-end",
+  },
+  dropdownContainer: {
+    width: 200,
+    borderRadius: 10,
+    marginHorizontal: 10,
+    overflow: "hidden",
+  },
+  dropdownContainerLight: {
+    backgroundColor: "white",
+  },
+  dropdownContainerDark: {
+    backgroundColor: "#101010",
+  },
+  dropdownOption: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#e5e5e5",
+  },
+  selectedOption: {},
+  dropdownOptionText: {
+    fontSize: 16,
+  },
+  dropdownOptionTextLight: {
+    color: "#000",
+  },
+  dropdownOptionTextDark: {
+    color: "#fff",
+  },
+  selectedOptionText: {
+    fontWeight: "600",
+    color: "#007AFF",
   },
 });
