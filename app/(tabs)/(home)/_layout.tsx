@@ -1,18 +1,48 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Slot, usePathname, useRouter } from "expo-router";
-import { useContext } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useContext, useState } from "react";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import SideMenu from "../../../components/SideMenu";
 import { AuthContext } from "../../_layout";
 
 export default function Layout() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const pathname = usePathname();
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        {isLoggedIn && (
+          <Pressable
+            style={styles.menuButton}
+            onPress={() => {
+              setIsSideMenuOpen(true);
+            }}
+          >
+            <Ionicons
+              name="menu"
+              size={24}
+              color={colorScheme === "dark" ? "gray" : "black"}
+            />
+          </Pressable>
+        )}
+        <SideMenu
+          isVisible={isSideMenuOpen}
+          onClose={() => setIsSideMenuOpen(false)}
+        />
         <Image
           source={require("@/assets/images/threads-logo.png")}
           style={styles.headerLogo}
@@ -25,6 +55,10 @@ export default function Layout() {
             <Text style={styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
         )}
+        <SideMenu
+          isVisible={isSideMenuOpen}
+          onClose={() => setIsSideMenuOpen(false)}
+        />
       </View>
       {isLoggedIn && (
         <View style={styles.tabContainer}>
@@ -72,6 +106,12 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
+    marginBottom: 16,
+  },
+  menuButton: {
+    position: "absolute",
+    top: 8,
+    left: 16,
   },
   headerLogo: {
     width: 36,

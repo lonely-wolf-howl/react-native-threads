@@ -378,7 +378,6 @@ export default function Modal() {
           />
         }
         style={styles.list}
-        contentContainerStyle={{ backgroundColor: "#ddd" }}
         keyboardShouldPersistTaps="handled"
       />
 
@@ -567,7 +566,6 @@ const styles = StyleSheet.create({
   // list
   list: {
     flex: 1,
-    backgroundColor: "#eee",
   },
   threadContainer: {
     flexDirection: "row",
@@ -584,7 +582,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#555",
   },
   threadLine: {
     width: 2,
@@ -667,7 +664,7 @@ const styles = StyleSheet.create({
   // list footer
   listFooter: {
     flexDirection: "row",
-    paddingLeft: 32,
+    paddingLeft: 30,
     paddingTop: 4,
     paddingBottom: 12,
   },
@@ -679,7 +676,6 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 12,
-    backgroundColor: "#555",
   },
   // footer
   footer: {
