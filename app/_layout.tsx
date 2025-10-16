@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { StatusBar } from "expo-status-bar";
 import { createContext, useEffect, useState } from "react";
 
 interface User {
@@ -63,6 +64,7 @@ export default function RootLayout() {
 
   return (
     <AuthContext value={{ user, login, logout }}>
+      <StatusBar style="auto" animated={true} translucent={false} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
