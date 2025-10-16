@@ -1,9 +1,23 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, useColorScheme, View } from "react-native";
 
 export default function Index() {
+  const colorScheme = useColorScheme();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Home Page</Text>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+      ]}
+    >
+      <Text
+        style={[
+          styles.text,
+          { color: colorScheme === "dark" ? "white" : "black" },
+        ]}
+      >
+        For you
+      </Text>
     </View>
   );
 }

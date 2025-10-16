@@ -23,7 +23,12 @@ export default function Layout() {
   const isLoggedIn = !!user;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+      ]}
+    >
       <View style={styles.header}>
         {isLoggedIn && (
           <Pressable
@@ -45,14 +50,27 @@ export default function Layout() {
         />
         <Image
           source={require("@/assets/images/threads-logo.png")}
-          style={styles.headerLogo}
+          style={[
+            styles.headerLogo,
+            { tintColor: colorScheme === "dark" ? "white" : undefined },
+          ]}
         />
         {!isLoggedIn && (
           <TouchableOpacity
-            style={styles.loginButton}
+            style={[
+              styles.loginButton,
+              { backgroundColor: colorScheme === "dark" ? "white" : "black" },
+            ]}
             onPress={() => router.replace("/login")}
           >
-            <Text style={styles.loginButtonText}>Login</Text>
+            <Text
+              style={[
+                styles.loginButtonText,
+                { color: colorScheme === "dark" ? "black" : "white" },
+              ]}
+            >
+              Login
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -215,15 +233,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     top: 0,
-    backgroundColor: "black",
     borderWidth: 1,
-    borderColor: "black",
     paddingVertical: 6,
     paddingHorizontal: 18,
     borderRadius: 12,
   },
   loginButtonText: {
-    color: "white",
     fontWeight: "600",
   },
 });

@@ -1,23 +1,39 @@
 import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from "react-native";
 
 export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
   const { username } = useLocalSearchParams();
+  const colorScheme = useColorScheme();
 
   return (
     <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+      ]}
     >
       <View>
         <TouchableOpacity onPress={() => router.push(`/${username}`)}>
           <Text
-            style={{ color: pathname === `/${username}` ? "#007AFF" : "black" }}
+            style={[
+              styles.tabText,
+              {
+                color:
+                  pathname === `/${username}`
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black",
+              },
+            ]}
           >
             Threads
           </Text>
@@ -26,9 +42,17 @@ export default function Index() {
       <View>
         <TouchableOpacity onPress={() => router.push(`/${username}/replies`)}>
           <Text
-            style={{
-              color: pathname === `/${username}/replies` ? "#007AFF" : "black",
-            }}
+            style={[
+              styles.tabText,
+              {
+                color:
+                  pathname === `/${username}/replies`
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black",
+              },
+            ]}
           >
             Replies
           </Text>
@@ -37,9 +61,17 @@ export default function Index() {
       <View>
         <TouchableOpacity onPress={() => router.push(`/${username}/reposts`)}>
           <Text
-            style={{
-              color: pathname === `/${username}/reposts` ? "#007AFF" : "black",
-            }}
+            style={[
+              styles.tabText,
+              {
+                color:
+                  pathname === `/${username}/reposts`
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black",
+              },
+            ]}
           >
             Reposts
           </Text>
@@ -48,3 +80,16 @@ export default function Index() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  tabText: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginVertical: 10,
+  },
+});

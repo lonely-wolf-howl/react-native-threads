@@ -35,6 +35,8 @@ export function ListFooter({
   canAddThread: boolean;
   addThread: () => void;
 }) {
+  const colorScheme = useColorScheme();
+
   return (
     <View style={styles.listFooter}>
       <View style={styles.listFooterAvatar}>
@@ -48,7 +50,13 @@ export function ListFooter({
           <Text
             style={{
               fontWeight: "600",
-              color: canAddThread ? "#999" : "#aaa",
+              color: canAddThread
+                ? colorScheme === "dark"
+                  ? "#666"
+                  : "#999"
+                : colorScheme === "dark"
+                ? "#555"
+                : "#aaa",
             }}
           >
             Add to thread
@@ -257,21 +265,35 @@ export default function Modal() {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.userInfoContainer}>
-          <Text style={styles.username}>Jay</Text>
+          <Text
+            style={[
+              styles.username,
+              { color: colorScheme === "dark" ? "white" : "black" },
+            ]}
+          >
+            Jay
+          </Text>
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeThread(item.id)}
               style={styles.removeButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="close-outline" size={20} color="#8e8e93" />
+              <Ionicons
+                name="close-outline"
+                size={20}
+                color={colorScheme === "dark" ? "#666" : "#8e8e93"}
+              />
             </TouchableOpacity>
           )}
         </View>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            { color: colorScheme === "dark" ? "white" : "black" },
+          ]}
           placeholder={"What's new?"}
-          placeholderTextColor="#999"
+          placeholderTextColor={colorScheme === "dark" ? "#666" : "#999"}
           value={item.text}
           onChangeText={(text) => updateThreadText(item.id, text)}
           multiline
@@ -291,7 +313,11 @@ export default function Modal() {
                   <Ionicons
                     name="close-circle"
                     size={20}
-                    color="rgba(0,0,0,0.7)"
+                    color={
+                      colorScheme === "dark"
+                        ? "rgba(255,255,255,0.7)"
+                        : "rgba(0,0,0,0.7)"
+                    }
                   />
                 </TouchableOpacity>
               </View>
@@ -318,7 +344,11 @@ export default function Modal() {
               style={styles.actionButton}
               onPress={() => !isPosting && pickImage(item.id)}
             >
-              <Ionicons name="image-outline" size={24} color="#777" />
+              <Ionicons
+                name="image-outline"
+                size={24}
+                color={colorScheme === "dark" ? "#666" : "#777"}
+              />
             </Pressable>
             <Pressable
               style={styles.actionButton}
@@ -335,7 +365,7 @@ export default function Modal() {
               <Ionicons
                 name="ellipsis-horizontal-circle-outline"
                 size={24}
-                color="#777"
+                color={colorScheme === "dark" ? "#666" : "#777"}
               />
             </Pressable>
           </View>
@@ -345,18 +375,44 @@ export default function Modal() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          backgroundColor: colorScheme === "dark" ? "#101010" : "#fff",
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+        ]}
+      >
         <Pressable
           onPress={handleCancel}
           disabled={isPosting}
           style={styles.headerLeft}
         >
-          <Text style={[styles.cancel, isPosting && styles.disabledText]}>
+          <Text
+            style={[
+              styles.cancel,
+              isPosting && styles.disabledText,
+              { color: colorScheme === "dark" ? "white" : "black" },
+            ]}
+          >
             Cancel
           </Text>
         </Pressable>
-        <Text style={styles.title}>New thread</Text>
+        <Text
+          style={[
+            styles.title,
+            { color: colorScheme === "dark" ? "white" : "black" },
+          ]}
+        >
+          New thread
+        </Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -506,9 +562,22 @@ export default function Modal() {
         </Pressable>
       </RNModal>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
+      <View
+        style={[
+          styles.footer,
+          {
+            paddingBottom: insets.bottom + 10,
+            backgroundColor: colorScheme === "dark" ? "#101010" : "#fff",
+          },
+        ]}
+      >
         <Pressable onPress={() => setIsReplyDropdownVisible(true)}>
-          <Text style={styles.footerText}>
+          <Text
+            style={[
+              styles.footerText,
+              { color: colorScheme === "dark" ? "#666" : "#999" },
+            ]}
+          >
             {replyOption} can reply and quote
           </Text>
         </Pressable>
@@ -517,7 +586,14 @@ export default function Modal() {
           disabled={!canPost}
           onPress={handlePost}
         >
-          <Text style={styles.postButtonText}>Post</Text>
+          <Text
+            style={[
+              styles.postButtonText,
+              { color: colorScheme === "dark" ? "#101010" : "white" },
+            ]}
+          >
+            Post
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -527,7 +603,6 @@ export default function Modal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   // header
   header: {
@@ -536,7 +611,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#fff",
   },
   headerLeft: {
     position: "absolute",
@@ -688,7 +762,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 10,
-    backgroundColor: "#fff",
   },
   footerText: {
     fontSize: 14,
@@ -707,7 +780,6 @@ const styles = StyleSheet.create({
   postButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#fff",
   },
   // reply
   modalOverlay: {
@@ -730,8 +802,6 @@ const styles = StyleSheet.create({
   dropdownOption: {
     paddingVertical: 15,
     paddingHorizontal: 20,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e5e5e5",
   },
   selectedOption: {},
   dropdownOptionText: {

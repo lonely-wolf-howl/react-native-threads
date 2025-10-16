@@ -23,7 +23,12 @@ export default function Layout() {
   const isLoggedIn = !!user;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+      ]}
+    >
       <View style={styles.header}>
         {isLoggedIn && (
           <Pressable
@@ -35,7 +40,7 @@ export default function Layout() {
             <Ionicons
               name="menu"
               size={24}
-              color={colorScheme === "dark" ? "gray" : "black"}
+              color={colorScheme === "dark" ? "white" : "black"}
             />
           </Pressable>
         )}
@@ -45,14 +50,27 @@ export default function Layout() {
         />
         <Image
           source={require("@/assets/images/threads-logo.png")}
-          style={styles.headerLogo}
+          style={[
+            styles.headerLogo,
+            { tintColor: colorScheme === "dark" ? "white" : undefined },
+          ]}
         />
         {!isLoggedIn && (
           <TouchableOpacity
-            style={styles.loginButton}
+            style={[
+              styles.loginButton,
+              { backgroundColor: colorScheme === "dark" ? "white" : "black" },
+            ]}
             onPress={() => router.replace("/login")}
           >
-            <Text style={styles.loginButtonText}>Login</Text>
+            <Text
+              style={[
+                styles.loginButtonText,
+                { color: colorScheme === "dark" ? "black" : "white" },
+              ]}
+            >
+              Login
+            </Text>
           </TouchableOpacity>
         )}
         <SideMenu
@@ -66,7 +84,12 @@ export default function Layout() {
             <TouchableOpacity onPress={() => router.push(`/`)}>
               <Text
                 style={{
-                  color: pathname === "/" ? "#007AFF" : "black",
+                  color:
+                    pathname === "/"
+                      ? "#007AFF"
+                      : colorScheme === "dark"
+                      ? "white"
+                      : "black",
                   fontWeight: "600",
                 }}
               >
@@ -78,7 +101,12 @@ export default function Layout() {
             <TouchableOpacity onPress={() => router.push(`/following`)}>
               <Text
                 style={{
-                  color: pathname === "/following" ? "#007AFF" : "black",
+                  color:
+                    pathname === "/following"
+                      ? "#007AFF"
+                      : colorScheme === "dark"
+                      ? "white"
+                      : "black",
                   fontWeight: "600",
                 }}
               >
@@ -121,15 +149,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     top: 0,
-    backgroundColor: "black",
     borderWidth: 1,
-    borderColor: "black",
     paddingVertical: 6,
     paddingHorizontal: 18,
     borderRadius: 12,
   },
   loginButtonText: {
-    color: "white",
     fontWeight: "600",
   },
 });

@@ -8,6 +8,7 @@ import {
   Pressable,
   Text,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from "react-native";
 import { AuthContext } from "../_layout";
@@ -59,6 +60,7 @@ export default function TabLayout() {
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const colorScheme = useColorScheme();
 
   const openLoginModal = () => {
     setIsLoginModalOpen(true);
@@ -79,6 +81,10 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: false,
           tabBarButton: (props) => <AnimatedTabBarButton {...props} />,
+          tabBarStyle: {
+            backgroundColor: colorScheme === "dark" ? "#101010" : "#fff",
+            borderTopColor: colorScheme === "dark" ? "#333" : "#e0e0e0",
+          },
         }}
       >
         <Tabs.Screen
@@ -88,9 +94,14 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name={focused ? "planet" : "planet-outline"}
-                color={focused ? "#007AFF" : "black"}
+                color={
+                  focused
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black"
+                }
                 size={26}
-                st
               />
             ),
           }}
@@ -102,7 +113,13 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name={focused ? "search" : "search-outline"}
-                color={focused ? "#007AFF" : "black"}
+                color={
+                  focused
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black"
+                }
                 size={26}
               />
             ),
@@ -125,7 +142,13 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="add"
-                color={focused ? "#007AFF" : "black"}
+                color={
+                  focused
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black"
+                }
                 size={26}
               />
             ),
@@ -146,7 +169,13 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name={focused ? "heart" : "heart-outline"}
-                color={focused ? "#007AFF" : "black"}
+                color={
+                  focused
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black"
+                }
                 size={26}
               />
             ),
@@ -167,7 +196,13 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name={focused ? "person" : "person-outline"}
-                color={focused ? "#007AFF" : "black"}
+                color={
+                  focused
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black"
+                }
                 size={26}
               />
             ),
@@ -193,12 +228,25 @@ export default function TabLayout() {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
           }}
         >
-          <View style={{ backgroundColor: "white", padding: 20 }}>
+          <View
+            style={{
+              backgroundColor: colorScheme === "dark" ? "#101010" : "white",
+              padding: 20,
+            }}
+          >
             <Pressable onPress={toLoginPage}>
-              <Text>Login Modal</Text>
+              <Text
+                style={{ color: colorScheme === "dark" ? "white" : "black" }}
+              >
+                Login Modal
+              </Text>
             </Pressable>
             <TouchableOpacity onPress={closeLoginModal}>
-              <Ionicons name="close" size={24} color="#555" />
+              <Ionicons
+                name="close"
+                size={24}
+                color={colorScheme === "dark" ? "white" : "#555"}
+              />
             </TouchableOpacity>
           </View>
         </View>

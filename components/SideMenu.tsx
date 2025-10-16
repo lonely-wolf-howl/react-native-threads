@@ -25,6 +25,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
 
   const showAppearance = () => {
     setIsAppearanceVisible(true);
+    onClose();
   };
 
   const closeAppearance = () => {
