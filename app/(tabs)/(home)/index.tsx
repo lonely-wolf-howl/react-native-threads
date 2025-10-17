@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { FlashList } from "@shopify/flash-list";
+import { usePathname } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
   StyleSheet,
   Text,
   useColorScheme,
@@ -9,29 +10,69 @@ import {
 } from "react-native";
 import PostComponent, { Post } from "../../../components/Post";
 
+const PAGE_SIZE = 10;
+
 export default function Index() {
   const colorScheme = useColorScheme();
+  const pathname = usePathname();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async (pageNum: number) => {
     try {
-      setLoading(true);
-      const response = await fetch("/posts");
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const response = await fetch(`/posts?page=${pageNum}&limit=${PAGE_SIZE}`);
       const data = await response.json();
-      setPosts(data.posts);
+      const fetchedPosts = data.posts || [];
+
+      if (fetchedPosts.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+
+      if (pageNum === 1) {
+        setPosts(fetchedPosts);
+      } else {
+        setPosts((prev) => [...prev, ...fetchedPosts]);
+      }
     } catch (err) {
       setError("Failed to load posts");
       console.error(err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    setPosts([]);
+    setPage(1);
+    setHasMore(true);
+    fetchPosts(1);
+  }, [pathname, fetchPosts]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && !loading && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchPosts(nextPage);
+    }
+  }, [loadingMore, loading, hasMore, page, fetchPosts]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Post }) => <PostComponent item={item} />,
+    []
+  );
+
+  const keyExtractor = useCallback((item: Post) => item.id, []);
 
   if (loading) {
     return (
@@ -65,17 +106,22 @@ export default function Index() {
   }
 
   return (
-    <ScrollView
-      nestedScrollEnabled
+    <View
       style={[
         styles.container,
         colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
-      {posts.map((post) => (
-        <PostComponent key={post.id} item={post} />
-      ))}
-    </ScrollView>
+      <FlashList
+        data={posts}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={2}
+        drawDistance={500}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 }
 
@@ -93,12 +139,6 @@ const styles = StyleSheet.create({
   },
   containerLight: {
     backgroundColor: "#ffffff",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
   },
   text: {
     fontSize: 18,

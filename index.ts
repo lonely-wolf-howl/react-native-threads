@@ -99,8 +99,12 @@ if (__DEV__) {
         }
       });
 
-      this.get("/posts", () => {
-        return { posts: mockPosts };
+      this.get("/posts", (_, request) => {
+        const page = Number(request.queryParams.page) || 1;
+        const limit = Number(request.queryParams.limit) || 10;
+        const start = (page - 1) * limit;
+
+        return { posts: mockPosts.slice(start, start + limit) };
       });
 
       this.get("/posts/:id", (_, request) => {
