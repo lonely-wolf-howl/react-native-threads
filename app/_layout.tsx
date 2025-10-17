@@ -125,7 +125,7 @@ function AnimatedSplashScreen({
     if (isAppReady) {
       Animated.timing(animation, {
         toValue: 0,
-        duration: 1500,
+        duration: 1000,
         useNativeDriver: true,
       }).start(() => setIsSplashAnimationComplete(true));
     }

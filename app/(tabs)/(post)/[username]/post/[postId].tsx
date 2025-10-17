@@ -86,7 +86,7 @@ export default function PostScreen() {
             reposts: 1,
             isVerified: true,
             avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-            image: `https://picsum.photos/id/29/800/600`,
+            images: [`https://picsum.photos/id/29/800/600`],
           }}
         />
         <View
@@ -109,15 +109,16 @@ export default function PostScreen() {
         <PostComponent
           item={{
             id: "0",
-            username: "ronnie",
-            displayName: "Ronnie",
-            content: "Hello, World!",
+            username: "sabrina",
+            displayName: "Sabrina",
+            content: "Hello, Arnold!",
             timeAgo: "10 minutes ago",
             likes: 1,
             comments: 0,
             reposts: 0,
             isVerified: true,
-            avatar: "https://randomuser.me/api/portraits/women/4.jpg",
+            avatar:
+              "https://townsquare.media/site/252/files/2024/06/attachment-Sabrina-Carpenter.jpg?w=1200&q=75&format=natural",
           }}
         />
       </ScrollView>

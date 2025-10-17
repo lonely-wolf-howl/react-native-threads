@@ -1,8 +1,10 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import {
   Image,
   Pressable,
+  ScrollView,
   Share,
   StyleSheet,
   Text,
@@ -22,7 +24,9 @@ export interface Post {
   reposts: number;
   isVerified?: boolean;
   avatar?: string;
-  image?: string;
+  images?: string[];
+  link?: string;
+  linkThumbnail?: string;
   location?: [number, number];
 }
 
@@ -118,7 +122,7 @@ export default function PostComponent({ item }: { item: Post }) {
         </View>
       </View>
 
-      <View style={styles.postContent}>
+      <View style={styles.postContent} pointerEvents="box-none">
         <Text
           style={[
             styles.postText,
@@ -127,12 +131,34 @@ export default function PostComponent({ item }: { item: Post }) {
         >
           {item.content}
         </Text>
-        {item.image && (
-          <Image
-            source={{ uri: item.image }}
-            style={styles.postImage}
-            resizeMode="cover"
-          />
+        <View pointerEvents="box-none">
+          <ScrollView
+            pointerEvents="box-only"
+            horizontal
+            scrollEnabled
+            nestedScrollEnabled
+            contentContainerStyle={styles.postImages}
+          >
+            {item.images &&
+              item.images.length > 0 &&
+              item.images.map((image) => (
+                <Image
+                  key={image}
+                  source={{ uri: image }}
+                  style={styles.postImage}
+                  resizeMode="cover"
+                />
+              ))}
+          </ScrollView>
+        </View>
+        {!item.images?.length && item.link && (
+          <Pressable onPress={() => WebBrowser.openBrowserAsync(item.link!)}>
+            <Image
+              source={{ uri: item.linkThumbnail }}
+              style={styles.postLink}
+              resizeMode="cover"
+            />
+          </Pressable>
         )}
         {item.location && item.location.length > 0 && (
           <Text style={styles.postText}>{item.location.join(", ")}</Text>
@@ -280,21 +306,32 @@ const styles = StyleSheet.create({
   postTextLight: {
     color: "#000",
   },
-  actionCount: {
-    marginLeft: 4,
-    fontSize: 14,
-    color: "#666",
+  postImages: {
+    flexDirection: "row",
+    gap: 8,
   },
   postImage: {
-    width: "100%",
+    width: 300,
     height: 300,
     marginTop: 16,
     marginBottom: 24,
     borderRadius: 12,
   },
+  postLink: {
+    width: "75%",
+    height: 200,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
     marginRight: 24,
+  },
+  actionCount: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: "#666",
   },
 });
