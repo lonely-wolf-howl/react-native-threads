@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import PostComponent, { Post } from "../../../components/Post";
+import * as Haptics from "expo-haptics";
 
 const PAGE_SIZE = 10;
 
@@ -19,6 +20,7 @@ export default function Index() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchPosts = useCallback(async (pageNum: number) => {
     try {
@@ -69,6 +71,14 @@ export default function Index() {
 
   const keyExtractor = useCallback((item: Post) => item.id, []);
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPosts([]);
+    fetchPosts(1);
+    setRefreshing(false);
+  }, [fetchPosts]);
+
   if (loading) {
     return (
       <View
@@ -109,6 +119,8 @@ export default function Index() {
     >
       <FlashList
         data={posts}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         onEndReached={handleLoadMore}

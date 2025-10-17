@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   activityFooter: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
   },
   avatarContainer: {
     position: "relative",
