@@ -4,13 +4,14 @@ import { useContext, useState } from "react";
 import {
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   useColorScheme,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SideMenu from "../../../components/SideMenu";
 import { AuthContext } from "../../_layout";
 
@@ -18,15 +19,20 @@ export default function Layout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
-        { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          backgroundColor: colorScheme === "dark" ? "#101010" : "#fff",
+        },
       ]}
     >
       <View style={styles.header}>
@@ -75,130 +81,240 @@ export default function Layout() {
         )}
       </View>
       {isLoggedIn && (
-        <View style={styles.tabContainer}>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/activity`)}>
-              <Text
-                style={{
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabScrollContainer}
+          contentContainerStyle={styles.tabContainer}
+        >
+          <TouchableOpacity
+            onPress={() => router.push(`/activity`)}
+            style={[
+              styles.tab,
+              pathname === "/activity" && styles.tabActive,
+              {
+                borderColor:
+                  pathname === "/activity"
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "#333"
+                    : "#ddd",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
                   color:
                     pathname === "/activity"
                       ? "#007AFF"
                       : colorScheme === "dark"
                       ? "white"
                       : "black",
-                  fontWeight: "600",
-                }}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/activity/follows`)}>
-              <Text
-                style={{
+                },
+              ]}
+            >
+              All
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/activity/follows`)}
+            style={[
+              styles.tab,
+              pathname === "/activity/follows" && styles.tabActive,
+              {
+                borderColor:
+                  pathname === "/activity/follows"
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "#333"
+                    : "#ddd",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
                   color:
                     pathname === "/activity/follows"
                       ? "#007AFF"
                       : colorScheme === "dark"
                       ? "white"
                       : "black",
-                  fontWeight: "600",
-                }}
-              >
-                Follows
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/activity/replies`)}>
-              <Text
-                style={{
+                },
+              ]}
+            >
+              Follows
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/activity/replies`)}
+            style={[
+              styles.tab,
+              pathname === "/activity/replies" && styles.tabActive,
+              {
+                borderColor:
+                  pathname === "/activity/replies"
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "#333"
+                    : "#ddd",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
                   color:
                     pathname === "/activity/replies"
                       ? "#007AFF"
                       : colorScheme === "dark"
                       ? "white"
                       : "black",
-                  fontWeight: "600",
-                }}
-              >
-                Replies
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/activity/mentions`)}>
-              <Text
-                style={{
+                },
+              ]}
+            >
+              Replies
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/activity/mentions`)}
+            style={[
+              styles.tab,
+              pathname === "/activity/mentions" && styles.tabActive,
+              {
+                borderColor:
+                  pathname === "/activity/mentions"
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "#333"
+                    : "#ddd",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
                   color:
                     pathname === "/activity/mentions"
                       ? "#007AFF"
                       : colorScheme === "dark"
                       ? "white"
                       : "black",
-                  fontWeight: "600",
-                }}
-              >
-                Mentions
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/activity/quotes`)}>
-              <Text
-                style={{
+                },
+              ]}
+            >
+              Mentions
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/activity/quotes`)}
+            style={[
+              styles.tab,
+              pathname === "/activity/quotes" && styles.tabActive,
+              {
+                borderColor:
+                  pathname === "/activity/quotes"
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "#333"
+                    : "#ddd",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
                   color:
                     pathname === "/activity/quotes"
                       ? "#007AFF"
                       : colorScheme === "dark"
                       ? "white"
                       : "black",
-                  fontWeight: "600",
-                }}
-              >
-                Quotes
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/activity/reposts`)}>
-              <Text
-                style={{
+                },
+              ]}
+            >
+              Quotes
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/activity/reposts`)}
+            style={[
+              styles.tab,
+              pathname === "/activity/reposts" && styles.tabActive,
+              {
+                borderColor:
+                  pathname === "/activity/reposts"
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "#333"
+                    : "#ddd",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
                   color:
                     pathname === "/activity/reposts"
                       ? "#007AFF"
                       : colorScheme === "dark"
                       ? "white"
                       : "black",
-                  fontWeight: "600",
-                }}
-              >
-                Reposts
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/activity/verified`)}>
-              <Text
-                style={{
+                },
+              ]}
+            >
+              Reposts
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/activity/verified`)}
+            style={[
+              styles.tab,
+              pathname === "/activity/verified" && styles.tabActive,
+              {
+                borderColor:
+                  pathname === "/activity/verified"
+                    ? "#007AFF"
+                    : colorScheme === "dark"
+                    ? "#333"
+                    : "#ddd",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                {
                   color:
                     pathname === "/activity/verified"
                       ? "#007AFF"
                       : colorScheme === "dark"
                       ? "white"
                       : "black",
-                  fontWeight: "600",
-                }}
-              >
-                Verified
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+                },
+              ]}
+            >
+              Verified
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+        
       )}
       <Slot />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -206,15 +322,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  tabScrollContainer: {
+    flexGrow: 0,
+  },
   tabContainer: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
+    justifyContent: "space-between",
+    gap: 8,
   },
   tab: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 2,
+  },
+  tabActive: {
+    backgroundColor: "rgba(0, 122, 255, 0.1)",
+  },
+  tabText: {
+    fontWeight: "600",
+    fontSize: 14,
   },
   header: {
     alignItems: "center",

@@ -141,7 +141,7 @@ export default function ActivityItem({
                 : styles.activityTextLight,
             ]}
           >
-            Followed you
+            followed you
           </Text>
         ) : (
           <Text

@@ -11,20 +11,23 @@ declare global {
 const mockPosts = [
   {
     id: "0",
-    username: "arnold",
-    displayName: "Arnold",
+    username: "The Weeknd",
+    displayName: "The Weeknd",
     content: "Hello, World!",
     timeAgo: "30 minutes ago",
     likes: 11,
     comments: 2,
     reposts: 1,
     isVerified: true,
-    avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-    images: ["https://picsum.photos/id/29/800/600"],
+    avatar:
+      "https://static.wikia.nocookie.net/the-weeknd/images/c/c1/The_Weeknd_-_After_Hours.png/revision/latest?cb=20220106031501",
+    images: [
+      "https://static.wikia.nocookie.net/the-weeknd/images/c/c1/The_Weeknd_-_After_Hours.png/revision/latest?cb=20220106031501",
+    ],
   },
   {
     id: "1",
-    username: "jay",
+    username: "Jay",
     displayName: "Jay",
     content: "Come to visit my GitHub!",
     timeAgo: "1 hour ago",
@@ -38,7 +41,7 @@ const mockPosts = [
   },
   {
     id: "2",
-    username: "sabrina",
+    username: "Sabrina",
     displayName: "Sabrina",
     content: "Hello, World!",
     timeAgo: "2 hour ago",
@@ -47,10 +50,10 @@ const mockPosts = [
     reposts: 3,
     isVerified: true,
     avatar:
-      "https://townsquare.media/site/252/files/2024/06/attachment-Sabrina-Carpenter.jpg?w=1200&q=75&format=natural",
+      "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
     images: [
-      "https://picsum.photos/id/38/800/600",
-      "https://picsum.photos/id/141/800/600",
+      "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
+      "https://static.wikia.nocookie.net/sabrina-carpenter/images/c/c5/Man%27s_Best_Friend.png/revision/latest?cb=20250905110110",
     ],
   },
 ];
@@ -59,16 +62,16 @@ const mockReplies: Record<string, any[]> = {
   "0": [
     {
       id: "0",
-      username: "sabrina",
+      username: "Sabrina",
       displayName: "Sabrina",
-      content: "Hello, Arnold!",
+      content: "Hello, The Weeknd!",
       timeAgo: "10 minutes ago",
       likes: 1,
       comments: 0,
       reposts: 0,
       isVerified: true,
       avatar:
-        "https://townsquare.media/site/252/files/2024/06/attachment-Sabrina-Carpenter.jpg?w=1200&q=75&format=natural",
+        "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
     },
   ],
 };
