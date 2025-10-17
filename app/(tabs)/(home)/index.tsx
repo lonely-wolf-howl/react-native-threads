@@ -1,8 +1,68 @@
-import { ScrollView, StyleSheet, useColorScheme } from "react-native";
-import PostComponent from "../../../components/Post";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
+import PostComponent, { Post } from "../../../components/Post";
 
 export default function Index() {
   const colorScheme = useColorScheme();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/posts");
+      const data = await response.json();
+      setPosts(data.posts);
+    } catch (err) {
+      setError("Failed to load posts");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.centerContainer,
+          colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+        ]}
+      >
+        <ActivityIndicator
+          size="large"
+          color={colorScheme === "dark" ? "#fff" : "#000"}
+        />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View
+        style={[
+          styles.centerContainer,
+          colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+        ]}
+      >
+        <Text style={{ color: colorScheme === "dark" ? "#fff" : "#000" }}>
+          {error}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -12,54 +72,9 @@ export default function Index() {
         colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
-      <PostComponent
-        item={{
-          id: "0",
-          username: "arnold",
-          displayName: "Arnold",
-          content: "Hello, World!",
-          timeAgo: "30 minutes ago",
-          likes: 11,
-          comments: 2,
-          reposts: 1,
-          isVerified: true,
-          avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-          images: [`https://picsum.photos/id/29/800/600`],
-        }}
-      />
-      <PostComponent
-        item={{
-          id: "1",
-          username: "jay",
-          displayName: "Jay",
-          content: "Come to visit my GitHub!",
-          timeAgo: "1 hour ago",
-          likes: 7,
-          comments: 1,
-          reposts: 6,
-          link: "https://github.com/lonely-wolf-howl",
-          linkThumbnail:
-            "https://avatars.githubusercontent.com/u/130229450?v=4",
-          isVerified: true,
-          avatar: "https://avatars.githubusercontent.com/u/130229450?v=4",
-        }}
-      />
-      <PostComponent
-        item={{
-          id: "2",
-          username: "sabrina",
-          displayName: "Sabrina",
-          content: "Hello, World!",
-          timeAgo: "2 hour ago",
-          likes: 3,
-          comments: 1,
-          reposts: 3,
-          isVerified: true,
-          avatar:
-            "https://townsquare.media/site/252/files/2024/06/attachment-Sabrina-Carpenter.jpg?w=1200&q=75&format=natural",
-          images: [`https://picsum.photos/id/38/800/600`],
-        }}
-      />
+      {posts.map((post) => (
+        <PostComponent key={post.id} item={post} />
+      ))}
     </ScrollView>
   );
 }
@@ -67,6 +82,11 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   containerDark: {
     backgroundColor: "#101010",

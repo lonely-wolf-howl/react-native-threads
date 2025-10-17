@@ -137,6 +137,7 @@ export default function PostComponent({ item }: { item: Post }) {
             horizontal
             scrollEnabled
             nestedScrollEnabled
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.postImages}
           >
             {item.images &&

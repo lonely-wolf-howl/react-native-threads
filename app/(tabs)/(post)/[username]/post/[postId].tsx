@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -11,14 +12,42 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import PostComponent from "../../../../../components/Post";
+import PostComponent, { Post } from "../../../../../components/Post";
 import SideMenu from "../../../../../components/SideMenu";
 
 export default function PostScreen() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { postId } = useLocalSearchParams();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [post, setPost] = useState<Post | null>(null);
+  const [replies, setReplies] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPostAndReplies = async () => {
+      try {
+        setLoading(true);
+        const [postResponse, repliesResponse] = await Promise.all([
+          fetch(`/posts/${postId}`),
+          fetch(`/posts/${postId}/replies`),
+        ]);
+        const postData = await postResponse.json();
+        const repliesData = await repliesResponse.json();
+        setPost(postData.post);
+        setReplies(repliesData.replies);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (postId) {
+      fetchPostAndReplies();
+    }
+  }, [postId]);
 
   return (
     <View
@@ -73,55 +102,44 @@ export default function PostScreen() {
           onClose={() => setIsSideMenuOpen(false)}
         />
       </View>
-      <ScrollView style={styles.scrollView}>
-        <PostComponent
-          item={{
-            id: "0",
-            username: "arnold",
-            displayName: "Arnold",
-            content: "Hello, World!",
-            timeAgo: "30 minutes ago",
-            likes: 11,
-            comments: 2,
-            reposts: 1,
-            isVerified: true,
-            avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-            images: [`https://picsum.photos/id/29/800/600`],
-          }}
-        />
-        <View
-          style={[
-            styles.repliesHeader,
-            {
-              borderBottomColor: colorScheme === "dark" ? "#333" : "#e0e0e0",
-            },
-          ]}
-        >
-          <Text
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator
+            size="large"
+            color={colorScheme === "dark" ? "#fff" : "#000"}
+          />
+        </View>
+      ) : post ? (
+        <ScrollView style={styles.scrollView}>
+          <PostComponent item={post} />
+          <View
             style={[
-              styles.repliesHeaderText,
-              { color: colorScheme === "dark" ? "#fff" : "#000" },
+              styles.repliesHeader,
+              {
+                borderBottomColor: colorScheme === "dark" ? "#333" : "#e0e0e0",
+              },
             ]}
           >
-            Replies
+            <Text
+              style={[
+                styles.repliesHeaderText,
+                { color: colorScheme === "dark" ? "#fff" : "#000" },
+              ]}
+            >
+              Replies
+            </Text>
+          </View>
+          {replies.map((reply) => (
+            <PostComponent key={reply.id} item={reply} />
+          ))}
+        </ScrollView>
+      ) : (
+        <View style={styles.loadingContainer}>
+          <Text style={{ color: colorScheme === "dark" ? "#fff" : "#000" }}>
+            Post not found
           </Text>
         </View>
-        <PostComponent
-          item={{
-            id: "0",
-            username: "sabrina",
-            displayName: "Sabrina",
-            content: "Hello, Arnold!",
-            timeAgo: "10 minutes ago",
-            likes: 1,
-            comments: 0,
-            reposts: 0,
-            isVerified: true,
-            avatar:
-              "https://townsquare.media/site/252/files/2024/06/attachment-Sabrina-Carpenter.jpg?w=1200&q=75&format=natural",
-          }}
-        />
-      </ScrollView>
+      )}
     </View>
   );
 }
@@ -138,6 +156,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     alignItems: "center",
