@@ -10,12 +10,13 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SideMenu from "../../../components/SideMenu";
 import { AuthContext } from "../../_layout";
 
 export default function Layout() {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const pathname = usePathname();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
@@ -23,10 +24,13 @@ export default function Layout() {
   const isLoggedIn = !!user;
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
-        { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+        {
+          backgroundColor: colorScheme === "dark" ? "#101010" : "#fff",
+          paddingTop: insets.top,
+        },
       ]}
     >
       <View style={styles.header}>
@@ -117,7 +121,7 @@ export default function Layout() {
         </View>
       )}
       <Slot />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -127,6 +131,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: "row",
+    paddingVertical: 12,
   },
   tab: {
     flex: 1,
