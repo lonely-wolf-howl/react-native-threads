@@ -102,9 +102,19 @@ if (__DEV__) {
       this.get("/posts", (_, request) => {
         const page = Number(request.queryParams.page) || 1;
         const limit = Number(request.queryParams.limit) || 10;
+        const type = request.queryParams.type || undefined;
         const start = (page - 1) * limit;
 
-        return { posts: mockPosts.slice(start, start + limit) };
+        let filteredPosts = mockPosts;
+
+        if (type === "following") {
+          const followingUsernames = ["sabrina"];
+          filteredPosts = mockPosts.filter((post) =>
+            followingUsernames.includes(post.username)
+          );
+        }
+
+        return { posts: filteredPosts.slice(start, start + limit) };
       });
 
       this.get("/posts/:id", (_, request) => {

@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Slot, usePathname, useRouter } from "expo-router";
+import {
+  createMaterialTopTabNavigator,
+  MaterialTopTabNavigationEventMap,
+  MaterialTopTabNavigationOptions,
+} from "@react-navigation/material-top-tabs";
+import { ParamListBase, TabNavigationState } from "@react-navigation/native";
+import { useRouter, withLayoutContext } from "expo-router";
 import { useContext, useState } from "react";
 import {
   Image,
@@ -13,12 +19,21 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SideMenu from "../../../components/SideMenu";
 import { AuthContext } from "../../_layout";
+import Index from "./index";
+
+const { Navigator } = createMaterialTopTabNavigator();
+
+export const MaterialTopTabs = withLayoutContext<
+  MaterialTopTabNavigationOptions,
+  typeof Navigator,
+  TabNavigationState<ParamListBase>,
+  MaterialTopTabNavigationEventMap
+>(Navigator);
 
 export default function Layout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const pathname = usePathname();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
@@ -82,45 +97,40 @@ export default function Layout() {
           onClose={() => setIsSideMenuOpen(false)}
         />
       </View>
-      {isLoggedIn && (
-        <View style={styles.tabContainer}>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/`)}>
-              <Text
-                style={{
-                  color:
-                    pathname === "/"
-                      ? "#007AFF"
-                      : colorScheme === "dark"
-                      ? "white"
-                      : "black",
-                  fontWeight: "600",
-                }}
-              >
-                For you
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.tab}>
-            <TouchableOpacity onPress={() => router.push(`/following`)}>
-              <Text
-                style={{
-                  color:
-                    pathname === "/following"
-                      ? "#007AFF"
-                      : colorScheme === "dark"
-                      ? "white"
-                      : "black",
-                  fontWeight: "600",
-                }}
-              >
-                Following
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      {isLoggedIn ? (
+        <MaterialTopTabs
+          screenOptions={{
+            lazy: true,
+            lazyPreloadDistance: 1,
+            tabBarStyle: {
+              backgroundColor: colorScheme === "dark" ? "#101010" : "#fff",
+              elevation: 0,
+              shadowOpacity: 0,
+              borderBottomWidth: 0,
+            },
+            tabBarLabelStyle: {
+              fontWeight: "600",
+              fontSize: 14,
+              textTransform: "none",
+            },
+            tabBarActiveTintColor: "#007AFF",
+            tabBarInactiveTintColor: colorScheme === "dark" ? "white" : "black",
+            tabBarIndicatorStyle: {
+              backgroundColor: "#007AFF",
+              height: 2,
+            },
+            tabBarPressColor: "transparent",
+          }}
+        >
+          <MaterialTopTabs.Screen name="index" options={{ title: "For you" }} />
+          <MaterialTopTabs.Screen
+            name="following"
+            options={{ title: "Following" }}
+          />
+        </MaterialTopTabs>
+      ) : (
+        <Index />
       )}
-      <Slot />
     </View>
   );
 }
@@ -128,14 +138,6 @@ export default function Layout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  tabContainer: {
-    flexDirection: "row",
-    paddingVertical: 12,
-  },
-  tab: {
-    flex: 1,
-    alignItems: "center",
   },
   header: {
     alignItems: "center",

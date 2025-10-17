@@ -1,5 +1,4 @@
 import { FlashList } from "@shopify/flash-list";
-import { usePathname } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,7 +13,6 @@ const PAGE_SIZE = 10;
 
 export default function Index() {
   const colorScheme = useColorScheme();
-  const pathname = usePathname();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -53,11 +51,8 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    setPosts([]);
-    setPage(1);
-    setHasMore(true);
     fetchPosts(1);
-  }, [pathname, fetchPosts]);
+  }, [fetchPosts]);
 
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && !loading && hasMore) {

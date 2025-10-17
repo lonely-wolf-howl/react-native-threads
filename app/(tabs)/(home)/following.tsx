@@ -1,23 +1,139 @@
-import { StyleSheet, Text, useColorScheme, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
+import PostComponent, { Post } from "../../../components/Post";
+
+const PAGE_SIZE = 10;
 
 export default function Following() {
   const colorScheme = useColorScheme();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchPosts = useCallback(async (pageNum: number) => {
+    try {
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const response = await fetch(
+        `/posts?type=following&page=${pageNum}&limit=${PAGE_SIZE}`
+      );
+      const data = await response.json();
+
+      const fetchedPosts = data.posts || [];
+
+      if (fetchedPosts.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+
+      if (pageNum === 1) {
+        setPosts(fetchedPosts);
+      } else {
+        setPosts((prev) => [...prev, ...fetchedPosts]);
+      }
+    } catch (err) {
+      setError("Failed to load posts");
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPosts(1);
+  }, [fetchPosts]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && !loading && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchPosts(nextPage);
+    }
+  }, [loadingMore, loading, hasMore, page, fetchPosts]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Post }) => <PostComponent item={item} />,
+    []
+  );
+
+  const keyExtractor = useCallback((item: Post) => item.id, []);
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.centerContainer,
+          colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+        ]}
+      >
+        <ActivityIndicator
+          size="large"
+          color={colorScheme === "dark" ? "#fff" : "#000"}
+        />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View
+        style={[
+          styles.centerContainer,
+          colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+        ]}
+      >
+        <Text style={{ color: colorScheme === "dark" ? "#fff" : "#000" }}>
+          {error}
+        </Text>
+      </View>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <View
+        style={[
+          styles.centerContainer,
+          colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+        ]}
+      >
+        <Text style={{ color: colorScheme === "dark" ? "#fff" : "#000" }}>
+          No posts from people you follow
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View
       style={[
         styles.container,
-        { backgroundColor: colorScheme === "dark" ? "#101010" : "#fff" },
+        colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
-      <Text
-        style={[
-          styles.text,
-          { color: colorScheme === "dark" ? "white" : "black" },
-        ]}
-      >
-        Following
-      </Text>
+      <FlashList
+        data={posts}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={2}
+        drawDistance={500}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -25,8 +141,17 @@ export default function Following() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  containerDark: {
+    backgroundColor: "#101010",
+  },
+  containerLight: {
+    backgroundColor: "#ffffff",
   },
   text: {
     fontSize: 18,
