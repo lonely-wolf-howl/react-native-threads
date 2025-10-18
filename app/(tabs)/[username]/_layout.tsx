@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthContext, User } from "../../../app/_layout";
-import EditProfileModal from "../../../components/EditProfileModal";
 import SideMenu from "../../../components/SideMenu";
 
 const MaterialTopTabs = withLayoutContext(
@@ -27,7 +26,6 @@ export default function TabLayout() {
   const { username } = useLocalSearchParams();
   const [profile, setProfile] = useState<User | null>(null);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const isLoggedIn = !!user;
   const isOwnProfile = isLoggedIn && user?.id === username?.slice(1);
 
@@ -55,9 +53,9 @@ export default function TabLayout() {
     }
   }, [username, user]);
 
-  const handleToggleEditModal = () => {
-    setIsEditModalVisible((prev) => !prev);
-  };
+  // const handleToggleEditModal = () => {
+  //   setIsEditModalVisible((prev) => !prev);
+  // };
 
   const handleShareProfile = async () => {
     try {
@@ -150,7 +148,7 @@ export default function TabLayout() {
                   ? styles.actionButtonDark
                   : styles.actionButtonLight,
               ]}
-              onPress={handleToggleEditModal}
+              // onPress={handleToggleEditModal}
             >
               <Text
                 style={[
@@ -207,13 +205,13 @@ export default function TabLayout() {
         </View>
       </View>
 
-      {user && (
+      {/* {user && (
         <EditProfileModal
           visible={isEditModalVisible}
           onClose={handleToggleEditModal}
           initialProfileData={user}
         />
-      )}
+      )} */}
       <MaterialTopTabs
         screenOptions={{
           lazy: true,
