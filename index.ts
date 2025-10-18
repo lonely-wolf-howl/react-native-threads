@@ -111,7 +111,7 @@ if (__DEV__) {
         let filteredPosts = mockPosts;
 
         if (type === "following") {
-          const followingUsernames = ["sabrina"];
+          const followingUsernames = ["Sabrina"];
           filteredPosts = mockPosts.filter((post) =>
             followingUsernames.includes(post.username)
           );
