@@ -93,7 +93,45 @@ export default function Modal() {
     router.back();
   };
 
-  const handlePost = () => {};
+  const handlePost = async () => {
+    if (isPosting) return;
+
+    setIsPosting(true);
+
+    try {
+      const formData = new FormData();
+
+      threads.forEach((thread, index) => {
+        formData.append(`posts[${index}][id]`, thread.id);
+        formData.append(`posts[${index}][userId]`, "jay");
+        formData.append(`posts[${index}][content]`, thread.text);
+
+        thread.imageUrls.forEach((imageUrl, imageIndex) => {
+          formData.append(`posts[${index}][imageUrls][${imageIndex}]`, {
+            uri: imageUrl,
+            name: `image_${index}_${imageIndex}.jpeg`,
+            type: "image/jpeg",
+          } as unknown as Blob);
+        });
+      });
+
+      const response = await fetch("/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        router.back();
+      }
+    } catch (error) {
+      console.error("Post error:", error);
+    } finally {
+      setIsPosting(false);
+    }
+  };
 
   const updateThreadText = (id: string, text: string) => {
     setThreads((prevThreads) =>
@@ -582,17 +620,34 @@ export default function Modal() {
           </Text>
         </Pressable>
         <Pressable
-          style={[styles.postButton, !canPost && styles.postButtonDisabled]}
-          disabled={!canPost}
+          style={[
+            styles.postButton,
+            {
+              backgroundColor:
+                !canPost || isPosting
+                  ? "#ccc"
+                  : colorScheme === "dark"
+                  ? "white"
+                  : "#000",
+            },
+          ]}
+          disabled={!canPost || isPosting}
           onPress={handlePost}
         >
           <Text
             style={[
               styles.postButtonText,
-              { color: colorScheme === "dark" ? "#101010" : "white" },
+              {
+                color:
+                  !canPost || isPosting
+                    ? "#666"
+                    : colorScheme === "dark"
+                    ? "#000"
+                    : "white",
+              },
             ]}
           >
-            Post
+            {isPosting ? "Posting..." : "Post"}
           </Text>
         </Pressable>
       </View>
@@ -772,10 +827,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 18,
-    backgroundColor: "#000",
-  },
-  postButtonDisabled: {
-    backgroundColor: "#ccc",
   },
   postButtonText: {
     fontSize: 14,

@@ -1,109 +1,13 @@
 import "expo-router/entry";
 
 import { createServer, Response, Server } from "miragejs";
+import { mockPosts, mockReplies, mockUsers, userPosts } from "./mocks/data";
 
 declare global {
   interface Window {
     server: Server;
   }
 }
-
-const mockPosts = [
-  {
-    id: "0",
-    username: "weeknd",
-    displayName: "The Weeknd",
-    content: "Hello, World!",
-    timeAgo: "30 minutes ago",
-    likes: 11,
-    comments: 2,
-    reposts: 1,
-    isVerified: true,
-    avatar:
-      "https://static.wikia.nocookie.net/the-weeknd/images/c/c1/The_Weeknd_-_After_Hours.png/revision/latest?cb=20220106031501",
-    images: [
-      "https://static.wikia.nocookie.net/the-weeknd/images/c/c1/The_Weeknd_-_After_Hours.png/revision/latest?cb=20220106031501",
-    ],
-  },
-  {
-    id: "1",
-    username: "jay",
-    displayName: "Jay",
-    content: "Come to visit my GitHub!",
-    timeAgo: "1 hour ago",
-    likes: 7,
-    comments: 1,
-    reposts: 6,
-    link: "https://github.com/lonely-wolf-howl",
-    linkThumbnail: "https://avatars.githubusercontent.com/u/130229450?v=4",
-    isVerified: true,
-    avatar: "https://avatars.githubusercontent.com/u/130229450?v=4",
-  },
-  {
-    id: "2",
-    username: "sabrina",
-    displayName: "Sabrina",
-    content: "Hello, World!",
-    timeAgo: "2 hour ago",
-    likes: 3,
-    comments: 1,
-    reposts: 3,
-    isVerified: true,
-    avatar:
-      "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
-    images: [
-      "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
-      "https://static.wikia.nocookie.net/sabrina-carpenter/images/c/c5/Man%27s_Best_Friend.png/revision/latest?cb=20250905110110",
-    ],
-  },
-];
-
-const mockReplies: Record<string, any[]> = {
-  "0": [
-    {
-      id: "0",
-      username: "sabrina",
-      displayName: "Sabrina",
-      content: "Hello, The Weeknd!",
-      timeAgo: "10 minutes ago",
-      likes: 1,
-      comments: 0,
-      reposts: 0,
-      isVerified: true,
-      avatar:
-        "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
-    },
-  ],
-};
-
-const mockUsers = [
-  {
-    id: "weeknd",
-    name: "The Weeknd",
-    description: "After Hours",
-    profileImageUrl:
-      "https://static.wikia.nocookie.net/the-weeknd/images/c/c1/The_Weeknd_-_After_Hours.png/revision/latest?cb=20220106031501",
-  },
-  {
-    id: "jay",
-    name: "Jay",
-    description: "backend developer",
-    profileImageUrl: "https://avatars.githubusercontent.com/u/130229450?v=4",
-  },
-  {
-    id: "sabrina",
-    name: "Sabrina",
-    description: "Short n' Sweet",
-    profileImageUrl:
-      "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
-  },
-];
-
-const userPosts: Record<string, string[]> = {
-  weeknd: ["0"],
-  jay: ["1"],
-  sabrina: ["2"],
-};
 
 if (__DEV__) {
   if (window.server) {
@@ -200,6 +104,159 @@ if (__DEV__) {
         }
 
         return { posts };
+      });
+
+      this.post("/posts", async (_, request) => {
+        try {
+          const formData = request.requestBody as unknown as FormData;
+          const posts: Record<string, any>[] = [];
+
+          if (typeof formData?.forEach !== "function") {
+            return new Response(
+              500,
+              {},
+              {
+                success: false,
+                message: "FormData parsing not supported",
+              }
+            );
+          }
+
+          formData.forEach((value, key) => {
+            const match = key.match(/posts\[(\d+)\]\[(\w+)\](\[(\d+)\])?$/);
+
+            if (match) {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const [_, index, field, , imageIndex] = match;
+              const i = parseInt(index);
+              const imgI = parseInt(imageIndex);
+
+              if (!posts[i]) {
+                posts[i] = {};
+              }
+
+              if (field === "imageUrls") {
+                if (!posts[i].imageUrls) {
+                  posts[i].imageUrls = [] as string[];
+                }
+                (posts[i].imageUrls as string[])[imgI] = (
+                  value as unknown as { uri: string }
+                ).uri;
+              } else if (field === "location") {
+                const locationValue = value as string;
+                if (
+                  locationValue &&
+                  locationValue !== "undefined" &&
+                  locationValue !== "null"
+                ) {
+                  try {
+                    posts[i].location = JSON.parse(locationValue);
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }
+              } else {
+                posts[i][field] = value as string;
+              }
+            }
+          });
+
+          if (!posts || posts.length === 0) {
+            return new Response(
+              400,
+              {},
+              { success: false, message: "No posts data provided" }
+            );
+          }
+
+          // Create main post from the first thread
+          const mainPost = posts[0];
+          const newPostId = String(mockPosts.length);
+
+          const newPost: any = {
+            id: newPostId,
+            username: mainPost.userId,
+            displayName: "Jay",
+            content: mainPost.content || "",
+            timeAgo: "Just now",
+            likes: 0,
+            comments: 0,
+            reposts: 0,
+            isVerified: true,
+            avatar: "https://avatars.githubusercontent.com/u/130229450?v=4",
+          };
+
+          if (mainPost.imageUrls && mainPost.imageUrls.length > 0) {
+            newPost.images = mainPost.imageUrls;
+          }
+          if (mainPost.location) {
+            newPost.location = mainPost.location;
+          }
+
+          // Add to the beginning of mock post lists
+          mockPosts.unshift(newPost);
+
+          // Add to user's post list
+          const userId = mainPost.userId;
+          if (!userPosts[userId]) {
+            userPosts[userId] = [];
+          }
+          userPosts[userId].unshift(newPostId);
+
+          // Process additional threads as replies
+          if (posts.length > 1) {
+            const replies = posts.slice(1).map((post: any, index: number) => {
+              const reply: any = {
+                id: `${newPostId}_reply_${index}`,
+                username: post.userId,
+                displayName: "Jay",
+                content: post.content || "",
+                timeAgo: "Just now",
+                likes: 0,
+                comments: 0,
+                reposts: 0,
+                isVerified: true,
+                avatar: "https://avatars.githubusercontent.com/u/130229450?v=4",
+              };
+
+              if (post.imageUrls && post.imageUrls.length > 0) {
+                reply.images = post.imageUrls;
+              }
+              if (post.location) {
+                reply.location = post.location;
+              }
+
+              return reply;
+            });
+
+            if (!mockReplies[newPostId]) {
+              mockReplies[newPostId] = [];
+            }
+            mockReplies[newPostId].push(...replies);
+          }
+
+          return new Response(
+            201,
+            {},
+            {
+              success: true,
+              message: "Post created successfully",
+              post: newPost,
+              threadCount: posts.length,
+            }
+          );
+        } catch (error) {
+          console.error(error);
+          return new Response(
+            500,
+            {},
+            {
+              success: false,
+              message: "Failed to create post",
+              error: String(error),
+            }
+          );
+        }
       });
     },
   });
