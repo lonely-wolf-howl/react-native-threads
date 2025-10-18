@@ -11,7 +11,7 @@ declare global {
 const mockPosts = [
   {
     id: "0",
-    username: "The Weeknd",
+    username: "weeknd",
     displayName: "The Weeknd",
     content: "Hello, World!",
     timeAgo: "30 minutes ago",
@@ -27,7 +27,7 @@ const mockPosts = [
   },
   {
     id: "1",
-    username: "Jay",
+    username: "jay",
     displayName: "Jay",
     content: "Come to visit my GitHub!",
     timeAgo: "1 hour ago",
@@ -41,7 +41,7 @@ const mockPosts = [
   },
   {
     id: "2",
-    username: "Sabrina",
+    username: "sabrina",
     displayName: "Sabrina",
     content: "Hello, World!",
     timeAgo: "2 hour ago",
@@ -62,7 +62,7 @@ const mockReplies: Record<string, any[]> = {
   "0": [
     {
       id: "0",
-      username: "Sabrina",
+      username: "sabrina",
       displayName: "Sabrina",
       content: "Hello, The Weeknd!",
       timeAgo: "10 minutes ago",
@@ -74,6 +74,35 @@ const mockReplies: Record<string, any[]> = {
         "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
     },
   ],
+};
+
+const mockUsers = [
+  {
+    id: "weeknd",
+    name: "The Weeknd",
+    description: "After Hours",
+    profileImageUrl:
+      "https://static.wikia.nocookie.net/the-weeknd/images/c/c1/The_Weeknd_-_After_Hours.png/revision/latest?cb=20220106031501",
+  },
+  {
+    id: "jay",
+    name: "Jay",
+    description: "backend developer",
+    profileImageUrl: "https://avatars.githubusercontent.com/u/130229450?v=4",
+  },
+  {
+    id: "sabrina",
+    name: "Sabrina",
+    description: "Short n' Sweet",
+    profileImageUrl:
+      "https://static.wikia.nocookie.net/sabrina-carpenter/images/0/07/Short_n%27_Sweet.png/revision/latest?cb=20240802050532",
+  },
+];
+
+const userPosts: Record<string, string[]> = {
+  weeknd: ["0"],
+  jay: ["1"],
+  sabrina: ["2"],
 };
 
 if (__DEV__) {
@@ -91,10 +120,11 @@ if (__DEV__) {
             accessToken: "access-token",
             refreshToken: "refresh-token",
             user: {
-              id: "threads-id",
-              name: "threads-name",
+              id: "jay",
+              name: "Jay",
               description: "backend developer",
-              profileImageUrl: "https://",
+              profileImageUrl:
+                "https://avatars.githubusercontent.com/u/130229450?v=4",
             },
           };
         } else {
@@ -103,21 +133,27 @@ if (__DEV__) {
       });
 
       this.get("/posts", (_, request) => {
-        const page = Number(request.queryParams.page) || 1;
-        const limit = Number(request.queryParams.limit) || 10;
+        const cursor = request.queryParams.cursor;
         const type = request.queryParams.type || undefined;
-        const start = (page - 1) * limit;
 
         let filteredPosts = mockPosts;
 
         if (type === "following") {
-          const followingUsernames = ["Sabrina"];
+          const followingUsernames = ["sabrina"];
           filteredPosts = mockPosts.filter((post) =>
             followingUsernames.includes(post.username)
           );
         }
 
-        return { posts: filteredPosts.slice(start, start + limit) };
+        if (cursor) {
+          const cursorIndex = filteredPosts.findIndex((p) => p.id === cursor);
+          if (cursorIndex !== -1 && cursorIndex < filteredPosts.length - 1) {
+            return { posts: filteredPosts.slice(cursorIndex + 1) };
+          }
+          return { posts: [] };
+        }
+
+        return { posts: filteredPosts };
       });
 
       this.get("/posts/:id", (_, request) => {
@@ -134,6 +170,36 @@ if (__DEV__) {
         const id = request.params.id;
         const replies = mockReplies[id] || [];
         return { replies };
+      });
+
+      this.get("/users/:userId", (_, request) => {
+        const userId = request.params.userId;
+        const user = mockUsers.find((u) => u.id === userId);
+        if (user) {
+          return { user };
+        } else {
+          return new Response(404, {}, { message: "User not found" });
+        }
+      });
+
+      this.get("/users/:userId/threads", (_, request) => {
+        const userId = request.params.userId;
+        const cursor = request.queryParams.cursor;
+
+        const postIds = userPosts[userId] || [];
+        const posts = postIds
+          .map((id) => mockPosts.find((p) => p.id === id))
+          .filter(Boolean);
+
+        if (cursor) {
+          const cursorIndex = posts.findIndex((p) => p?.id === cursor);
+          if (cursorIndex !== -1 && cursorIndex < posts.length - 1) {
+            return { posts: posts.slice(cursorIndex + 1) };
+          }
+          return { posts: [] };
+        }
+
+        return { posts };
       });
     },
   });

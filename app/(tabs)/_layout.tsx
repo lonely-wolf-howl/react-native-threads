@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs, usePathname, useRouter } from "expo-router";
 import { useContext, useRef, useState } from "react";
 import {
   Animated,
   Modal,
   Pressable,
+  StyleSheet,
   Text,
   TouchableOpacity,
   useColorScheme,
@@ -42,10 +43,7 @@ const AnimatedTabBarButton = ({
       {...restProps}
       onPress={onPress}
       onPressOut={handlePressOut}
-      style={[
-        { flex: 1, justifyContent: "center", alignItems: "center" },
-        style,
-      ]}
+      style={[styles.tabBarButton, style]}
       android_ripple={{ borderless: false, radius: 0 }}
     >
       <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
@@ -56,11 +54,12 @@ const AnimatedTabBarButton = ({
 };
 
 export default function TabLayout() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const colorScheme = useColorScheme();
 
   const openLoginModal = () => {
     setIsLoginModalOpen(true);
@@ -140,17 +139,27 @@ export default function TabLayout() {
           options={{
             tabBarLabel: () => null,
             tabBarIcon: ({ focused }) => (
-              <Ionicons
-                name="add"
-                color={
-                  focused
-                    ? "#007AFF"
-                    : colorScheme === "dark"
-                    ? "white"
-                    : "black"
-                }
-                size={26}
-              />
+              <View
+                style={[
+                  styles.addButtonContainer,
+                  {
+                    backgroundColor:
+                      colorScheme === "dark" ? "#2C2C2E" : "#E5E5EA",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="add"
+                  color={
+                    focused
+                      ? "#007AFF"
+                      : colorScheme === "dark"
+                      ? "white"
+                      : "black"
+                  }
+                  size={26}
+                />
+              </View>
             ),
           }}
         />
@@ -185,27 +194,32 @@ export default function TabLayout() {
           name="[username]"
           listeners={{
             tabPress: (e) => {
-              if (!isLoggedIn) {
-                e.preventDefault();
+              e.preventDefault();
+              if (isLoggedIn) {
+                router.push(`/@${user.id}`);
+              } else {
                 openLoginModal();
               }
             },
           }}
           options={{
             tabBarLabel: () => null,
-            tabBarIcon: ({ focused }) => (
-              <Ionicons
-                name={focused ? "person" : "person-outline"}
-                color={
-                  focused
-                    ? "#007AFF"
-                    : colorScheme === "dark"
-                    ? "white"
-                    : "black"
-                }
-                size={26}
-              />
-            ),
+            tabBarIcon: ({ focused }) => {
+              const isMyProfile = user?.id === pathname?.slice(2);
+              return (
+                <Ionicons
+                  name={focused && isMyProfile ? "person" : "person-outline"}
+                  color={
+                    focused && isMyProfile
+                      ? "#007AFF"
+                      : colorScheme === "dark"
+                      ? "white"
+                      : "black"
+                  }
+                  size={26}
+                />
+              );
+            },
           }}
         />
         <Tabs.Screen
@@ -221,22 +235,21 @@ export default function TabLayout() {
         transparent={true}
         animationType="slide"
       >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-          }}
-        >
+        <View style={styles.modalOverlay}>
           <View
-            style={{
-              backgroundColor: colorScheme === "dark" ? "#101010" : "white",
-              padding: 20,
-            }}
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: colorScheme === "dark" ? "#101010" : "white",
+              },
+            ]}
           >
             <Pressable onPress={toLoginPage}>
               <Text
-                style={{ color: colorScheme === "dark" ? "white" : "black" }}
+                style={[
+                  styles.modalText,
+                  { color: colorScheme === "dark" ? "white" : "black" },
+                ]}
               >
                 Login Modal
               </Text>
@@ -254,3 +267,28 @@ export default function TabLayout() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarButton: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  addButtonContainer: {
+    borderRadius: 8,
+    width: 46,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    padding: 20,
+  },
+  modalText: {},
+});

@@ -1,10 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import {
-  createMaterialTopTabNavigator,
-  MaterialTopTabNavigationEventMap,
-  MaterialTopTabNavigationOptions,
-} from "@react-navigation/material-top-tabs";
-import { ParamListBase, TabNavigationState } from "@react-navigation/native";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useRouter, withLayoutContext } from "expo-router";
 import { useContext, useState } from "react";
 import {
@@ -21,14 +16,9 @@ import SideMenu from "../../../components/SideMenu";
 import { AuthContext } from "../../_layout";
 import Index from "./index";
 
-const { Navigator } = createMaterialTopTabNavigator();
-
-export const MaterialTopTabs = withLayoutContext<
-  MaterialTopTabNavigationOptions,
-  typeof Navigator,
-  TabNavigationState<ParamListBase>,
-  MaterialTopTabNavigationEventMap
->(Navigator);
+const MaterialTopTabs = withLayoutContext(
+  createMaterialTopTabNavigator().Navigator
+);
 
 export default function Layout() {
   const colorScheme = useColorScheme();

@@ -1,68 +1,52 @@
 import { FlashList } from "@shopify/flash-list";
-import { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from "react-native";
-import PostComponent, { Post } from "../../../components/Post";
 import * as Haptics from "expo-haptics";
-
-const PAGE_SIZE = 10;
+import { useCallback, useEffect, useState } from "react";
+import { StyleSheet, useColorScheme, View } from "react-native";
+import PostComponent, { Post } from "../../../components/Post";
 
 export default function Index() {
   const colorScheme = useColorScheme();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchPosts = useCallback(async (pageNum: number) => {
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = useCallback(async () => {
     try {
-      if (pageNum === 1) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-
-      const response = await fetch(`/posts?page=${pageNum}&limit=${PAGE_SIZE}`);
+      const response = await fetch("/posts");
       const data = await response.json();
-      const fetchedPosts = data.posts || [];
-
-      if (fetchedPosts.length < PAGE_SIZE) {
-        setHasMore(false);
-      }
-
-      if (pageNum === 1) {
-        setPosts(fetchedPosts);
-      } else {
-        setPosts((prev) => [...prev, ...fetchedPosts]);
-      }
-    } catch (err) {
-      setError("Failed to load posts");
-      console.error(err);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      setPosts(data.posts || []);
+    } catch (error) {
+      console.error(error);
+      setPosts([]);
     }
   }, []);
 
-  useEffect(() => {
-    fetchPosts(1);
-  }, [fetchPosts]);
+  const onEndReached = useCallback(() => {
+    const lastPostId = posts.at(-1)?.id;
 
-  const handleLoadMore = useCallback(() => {
-    if (!loadingMore && !loading && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchPosts(nextPage);
-    }
-  }, [loadingMore, loading, hasMore, page, fetchPosts]);
+    if (!lastPostId) return;
+
+    fetch(`/posts?cursor=${lastPostId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.posts && data.posts.length > 0) {
+          setPosts((prev) => [...prev, ...data.posts]);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, [posts]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await fetchPosts();
+    setRefreshing(false);
+  }, [fetchPosts]);
 
   const renderItem = useCallback(
     ({ item }: { item: Post }) => <PostComponent item={item} />,
@@ -70,45 +54,6 @@ export default function Index() {
   );
 
   const keyExtractor = useCallback((item: Post) => item.id, []);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPosts([]);
-    fetchPosts(1);
-    setRefreshing(false);
-  }, [fetchPosts]);
-
-  if (loading) {
-    return (
-      <View
-        style={[
-          styles.centerContainer,
-          colorScheme === "dark" ? styles.containerDark : styles.containerLight,
-        ]}
-      >
-        <ActivityIndicator
-          size="large"
-          color={colorScheme === "dark" ? "#fff" : "#000"}
-        />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View
-        style={[
-          styles.centerContainer,
-          colorScheme === "dark" ? styles.containerDark : styles.containerLight,
-        ]}
-      >
-        <Text style={{ color: colorScheme === "dark" ? "#fff" : "#000" }}>
-          {error}
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <View
@@ -123,9 +68,8 @@ export default function Index() {
         onRefresh={onRefresh}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        onEndReached={handleLoadMore}
+        onEndReached={onEndReached}
         onEndReachedThreshold={2}
-        drawDistance={500}
         showsVerticalScrollIndicator={false}
       />
     </View>

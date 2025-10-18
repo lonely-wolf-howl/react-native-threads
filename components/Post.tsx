@@ -39,8 +39,16 @@ export default function PostComponent({ item }: { item: Post }) {
   const colorScheme = useColorScheme();
   const router = useRouter();
 
-  const handleShare = async (username: string, postId: string) => {
-    const shareUrl = `thread://@${username}/post/${postId}`;
+  const handleUserPress = () => {
+    router.push(`/@${item.username}`);
+  };
+
+  const handlePostPress = () => {
+    router.push(`/@${item.username}/post/${item.id}`);
+  };
+
+  const handleShare = async () => {
+    const shareUrl = `thread://@${item.username}/post/${item.id}`;
 
     try {
       await Share.share({
@@ -48,16 +56,8 @@ export default function PostComponent({ item }: { item: Post }) {
         url: shareUrl,
       });
     } catch (error) {
-      console.error("Error sharing post:", error);
+      console.error(error);
     }
-  };
-
-  const handlePostPress = (post: Post) => {
-    router.push(`/@${post.username}/post/${post.id}`);
-  };
-
-  const handleUserPress = (post: Post) => {
-    router.push(`/@${post.username}`);
   };
 
   return (
@@ -66,12 +66,12 @@ export default function PostComponent({ item }: { item: Post }) {
         styles.postContainer,
         { borderBottomColor: colorScheme === "dark" ? "#333" : "#eee" },
       ]}
-      onPress={() => handlePostPress(item)}
+      onPress={handlePostPress}
       delayLongPress={200}
     >
       <View style={styles.postHeader}>
         <View style={styles.userInfo}>
-          <TouchableOpacity onPress={() => handleUserPress(item)}>
+          <TouchableOpacity onPress={handleUserPress}>
             {item.avatar ? (
               <Image source={{ uri: item.avatar }} style={styles.avatar} />
             ) : (
@@ -81,7 +81,7 @@ export default function PostComponent({ item }: { item: Post }) {
             )}
           </TouchableOpacity>
           <View style={styles.usernameContainer}>
-            <TouchableOpacity onPress={() => handleUserPress(item)}>
+            <TouchableOpacity onPress={handleUserPress}>
               <View style={styles.usernameRow}>
                 <Text
                   style={[
@@ -91,7 +91,7 @@ export default function PostComponent({ item }: { item: Post }) {
                       : styles.usernameLight,
                   ]}
                 >
-                  {item.username}
+                  {item.displayName}
                 </Text>
                 {item.isVerified && (
                   <Ionicons
@@ -218,10 +218,7 @@ export default function PostComponent({ item }: { item: Post }) {
             </Text>
           )}
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleShare(item.username, item.id)}
-        >
+        <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
           <Feather
             name="send"
             size={20}
