@@ -19,6 +19,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 interface Thread {
   id: string;
@@ -124,10 +125,30 @@ export default function Modal() {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        Toast.show({
+          text1: "Thread posted successfully!",
+          type: "customToast",
+          visibilityTime: 2000,
+          position: "bottom",
+          bottomOffset: 40,
+          onPress: () => {
+            router.replace(`/@${data.post.user.id}/post/${data.post.id}`);
+            Toast.hide();
+          },
+        });
         router.back();
+      } else {
+        Toast.show({
+          text1: "Failed to post thread",
+          type: "customToast",
+          visibilityTime: 2000,
+          position: "bottom",
+          bottomOffset: 40,
+        });
       }
     } catch (error) {
-      console.error("Post error:", error);
+      console.error(error);
     } finally {
       setIsPosting(false);
     }

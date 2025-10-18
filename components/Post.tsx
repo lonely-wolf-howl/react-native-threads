@@ -15,16 +15,18 @@ import {
 
 export interface Post {
   id: string;
-  username: string;
-  displayName: string;
+  user: {
+    id: string;
+    name: string;
+    profileImageUrl: string;
+    isVerified?: boolean;
+  };
   content: string;
   timeAgo: string;
   likes: number;
   comments: number;
   reposts: number;
-  isVerified?: boolean;
-  avatar?: string;
-  images?: string[];
+  imageUrls?: string[];
   link?: string;
   linkThumbnail?: string;
   location?: [number, number];
@@ -40,15 +42,15 @@ export default function PostComponent({ item }: { item: Post }) {
   const router = useRouter();
 
   const handleUserPress = () => {
-    router.push(`/@${item.username}`);
+    router.push(`/@${item.user.id}`);
   };
 
   const handlePostPress = () => {
-    router.push(`/@${item.username}/post/${item.id}`);
+    router.push(`/@${item.user.id}/post/${item.id}`);
   };
 
   const handleShare = async () => {
-    const shareUrl = `thread://@${item.username}/post/${item.id}`;
+    const shareUrl = `thread://@${item.user.id}/post/${item.id}`;
 
     try {
       await Share.share({
@@ -72,8 +74,11 @@ export default function PostComponent({ item }: { item: Post }) {
       <View style={styles.postHeader}>
         <View style={styles.userInfo}>
           <TouchableOpacity onPress={handleUserPress}>
-            {item.avatar ? (
-              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+            {item.user.profileImageUrl ? (
+              <Image
+                source={{ uri: item.user.profileImageUrl }}
+                style={styles.avatar}
+              />
             ) : (
               <View style={styles.avatar}>
                 <Ionicons name="person-circle" size={40} color="#ccc" />
@@ -91,9 +96,9 @@ export default function PostComponent({ item }: { item: Post }) {
                       : styles.usernameLight,
                   ]}
                 >
-                  {item.displayName}
+                  {item.user.name}
                 </Text>
-                {item.isVerified && (
+                {item.user.isVerified && (
                   <Ionicons
                     name="checkmark-circle"
                     size={16}
@@ -140,9 +145,9 @@ export default function PostComponent({ item }: { item: Post }) {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.postImages}
           >
-            {item.images &&
-              item.images.length > 0 &&
-              item.images.map((image) => (
+            {item.imageUrls &&
+              item.imageUrls.length > 0 &&
+              item.imageUrls.map((image) => (
                 <Image
                   key={image}
                   source={{ uri: image }}
@@ -152,7 +157,7 @@ export default function PostComponent({ item }: { item: Post }) {
               ))}
           </ScrollView>
         </View>
-        {!item.images?.length && item.link && (
+        {!item.imageUrls?.length && item.link && (
           <Pressable onPress={() => WebBrowser.openBrowserAsync(item.link!)}>
             <Image
               source={{ uri: item.linkThumbnail }}

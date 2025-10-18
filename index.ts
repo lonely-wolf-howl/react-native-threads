@@ -45,7 +45,7 @@ if (__DEV__) {
         if (type === "following") {
           const followingUsernames = ["sabrina"];
           filteredPosts = mockPosts.filter((post) =>
-            followingUsernames.includes(post.username)
+            followingUsernames.includes(post.user.id)
           );
         }
 
@@ -108,6 +108,8 @@ if (__DEV__) {
 
       this.post("/posts", async (_, request) => {
         try {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
           const formData = request.requestBody as unknown as FormData;
           const posts: Record<string, any>[] = [];
 
@@ -175,19 +177,22 @@ if (__DEV__) {
 
           const newPost: any = {
             id: newPostId,
-            username: mainPost.userId,
-            displayName: "Jay",
+            user: {
+              id: mainPost.userId,
+              name: "Jay",
+              profileImageUrl:
+                "https://avatars.githubusercontent.com/u/130229450?v=4",
+              isVerified: true,
+            },
             content: mainPost.content || "",
             timeAgo: "Just now",
             likes: 0,
             comments: 0,
             reposts: 0,
-            isVerified: true,
-            avatar: "https://avatars.githubusercontent.com/u/130229450?v=4",
           };
 
           if (mainPost.imageUrls && mainPost.imageUrls.length > 0) {
-            newPost.images = mainPost.imageUrls;
+            newPost.imageUrls = mainPost.imageUrls;
           }
           if (mainPost.location) {
             newPost.location = mainPost.location;
@@ -208,19 +213,22 @@ if (__DEV__) {
             const replies = posts.slice(1).map((post: any, index: number) => {
               const reply: any = {
                 id: `${newPostId}_reply_${index}`,
-                username: post.userId,
-                displayName: "Jay",
+                user: {
+                  id: post.userId,
+                  name: "Jay",
+                  profileImageUrl:
+                    "https://avatars.githubusercontent.com/u/130229450?v=4",
+                  isVerified: true,
+                },
                 content: post.content || "",
                 timeAgo: "Just now",
                 likes: 0,
                 comments: 0,
                 reposts: 0,
-                isVerified: true,
-                avatar: "https://avatars.githubusercontent.com/u/130229450?v=4",
               };
 
               if (post.imageUrls && post.imageUrls.length > 0) {
-                reply.images = post.imageUrls;
+                reply.imageUrls = post.imageUrls;
               }
               if (post.location) {
                 reply.location = post.location;

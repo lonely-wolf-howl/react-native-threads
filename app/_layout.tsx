@@ -7,6 +7,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, useColorScheme, View } from "react-native";
+import Toast, { BaseToast } from "react-native-toast-message";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -199,6 +200,34 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      <Toast config={toastConfig} />
     </AnimatedAppLoader>
   );
 }
+
+const toastConfig = {
+  customToast: (props: any) => (
+    <BaseToast
+      style={{
+        backgroundColor: "white",
+        borderRadius: 20,
+        height: 40,
+        borderLeftWidth: 0,
+        shadowOpacity: 0,
+        justifyContent: "center",
+      }}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        alignItems: "center",
+        height: 40,
+      }}
+      text1Style={{
+        color: "black",
+        fontSize: 14,
+        fontWeight: "500",
+      }}
+      text1={props.text1}
+      onPress={props.onPress}
+    />
+  ),
+};
