@@ -99,8 +99,8 @@ export default function Layout() {
               borderBottomWidth: 0,
             },
             tabBarLabelStyle: {
-              fontWeight: "600",
-              fontSize: 14,
+              fontWeight: "bold",
+              fontSize: 16,
               textTransform: "none",
             },
             tabBarActiveTintColor: "#007AFF",

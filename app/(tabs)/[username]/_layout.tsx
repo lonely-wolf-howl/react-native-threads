@@ -216,26 +216,23 @@ export default function TabLayout() {
         screenOptions={{
           lazy: true,
           tabBarStyle: {
-            backgroundColor: colorScheme === "dark" ? "#101010" : "white",
-            shadowColor: "transparent",
-            position: "relative",
+            backgroundColor: colorScheme === "dark" ? "#101010" : "#fff",
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 0,
           },
           tabBarLabelStyle: {
             fontSize: 16,
             fontWeight: "bold",
+            textTransform: "none",
+          },
+          tabBarActiveTintColor: "#007AFF",
+          tabBarInactiveTintColor: colorScheme === "dark" ? "white" : "black",
+          tabBarIndicatorStyle: {
+            backgroundColor: "#007AFF",
+            height: 2,
           },
           tabBarPressColor: "transparent",
-          tabBarActiveTintColor: colorScheme === "dark" ? "white" : "#555",
-          tabBarIndicatorStyle: {
-            backgroundColor: colorScheme === "dark" ? "white" : "black",
-            height: 1,
-          },
-          tabBarIndicatorContainerStyle: {
-            backgroundColor: colorScheme === "dark" ? "#aaa" : "#555",
-            position: "absolute",
-            top: 48,
-            height: 1,
-          },
         }}
       >
         <MaterialTopTabs.Screen name="index" options={{ title: "Threads" }} />

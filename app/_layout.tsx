@@ -1,13 +1,35 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, useColorScheme, View } from "react-native";
+import {
+  Animated,
+  Linking,
+  StyleSheet,
+  useColorScheme,
+  View,
+} from "react-native";
 import Toast, { BaseToast } from "react-native-toast-message";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+  handleSuccess(notificationId) {
+    // todo: handle notification success
+  },
+  handleError(notificationId, error) {
+    // todo: handle notification error
+  },
+});
 
 SplashScreen.preventAutoHideAsync();
 
@@ -115,12 +137,12 @@ function AnimatedSplashScreen({
   children: React.ReactNode;
   image: number;
 }) {
+  const colorScheme = useColorScheme();
   const [isAppReady, setIsAppReady] = useState(false);
   const [isSplashAnimationComplete, setIsSplashAnimationComplete] =
     useState(false);
   const animation = useRef(new Animated.Value(1)).current;
   const { updateUser } = useContext(AuthContext);
-  const colorScheme = useColorScheme();
 
   useEffect(() => {
     if (isAppReady) {
@@ -143,6 +165,21 @@ function AnimatedSplashScreen({
         }),
       ]);
       await SplashScreen.hideAsync();
+
+      /**
+       * local notification
+       */
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        return Linking.openSettings();
+      }
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Hello, World!",
+          body: "This is a notification",
+        },
+        trigger: null,
+      });
     } catch (error) {
       console.error(error);
     } finally {
