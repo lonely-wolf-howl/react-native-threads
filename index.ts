@@ -2,6 +2,7 @@ import "expo-router/entry";
 
 import { createServer, Response, Server } from "miragejs";
 import { mockPosts, mockReplies, mockUsers, userPosts } from "./mocks/data";
+import * as Device from "expo-device";
 
 declare global {
   interface Window {
@@ -9,7 +10,7 @@ declare global {
   }
 }
 
-if (__DEV__) {
+if (__DEV__ && Device.isDevice) {
   if (window.server) {
     window.server.shutdown();
   }

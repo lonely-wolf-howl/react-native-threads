@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -130,6 +131,26 @@ function AnimatedAppLoader({
   );
 }
 
+async function sendPushNotification(expoPushToken: string) {
+  const message = {
+    to: expoPushToken,
+    sound: "default",
+    title: "Original Title",
+    body: "And here is the body!",
+    data: { someData: "goes here" },
+  };
+
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  });
+}
+
 function AnimatedSplashScreen({
   children,
   image,
@@ -143,6 +164,7 @@ function AnimatedSplashScreen({
     useState(false);
   const animation = useRef(new Animated.Value(1)).current;
   const { updateUser } = useContext(AuthContext);
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAppReady) {
@@ -167,25 +189,29 @@ function AnimatedSplashScreen({
       await SplashScreen.hideAsync();
 
       /**
-       * local notification
+       * push notification
        */
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
         return Linking.openSettings();
       }
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Hello, World!",
-          body: "This is a notification",
-        },
-        trigger: null,
+      const token = await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig?.extra?.eas?.projectId,
       });
+      setExpoPushToken(token.data);
+      // todo: send push notification to server
     } catch (error) {
       console.error(error);
     } finally {
       setIsAppReady(true);
     }
   };
+
+  useEffect(() => {
+    if (expoPushToken && Device.isDevice) {
+      sendPushNotification(expoPushToken);
+    }
+  }, [expoPushToken]);
 
   return (
     <View

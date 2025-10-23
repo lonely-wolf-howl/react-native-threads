@@ -44,3 +44,7 @@ app-example
 
 .vscode/
 .idea/
+
+# firebase
+threads-*.json
+google-services.json
