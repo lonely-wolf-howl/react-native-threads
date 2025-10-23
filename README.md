@@ -2,7 +2,7 @@
 
 ### Threads lists and detail.
 <p>
-   <img width="270" height="606" alt="Screenshot_1760876962" src="https://github.com/user-attachments/assets/ea5e19c0-f5e1-4db5-9844-db04667d90ae" />
+   <img width="270" height="606" alt="Screenshot_1761220790" src="https://github.com/user-attachments/assets/221bb6dd-7ee4-4338-8581-09f59e7847ce" />
    &nbsp;&nbsp;&nbsp;
    <img width="270" height="606" alt="Screenshot_1760876990" src="https://github.com/user-attachments/assets/3ab23cf6-f169-421a-93ad-88ffad27372c" />
 </p>
@@ -24,5 +24,5 @@
 
 ### User Profile.
 <p>
-   <img width="270" height="606" alt="Screenshot_1760877075" src="https://github.com/user-attachments/assets/1e1b35c5-5c79-46ed-987a-6e564a15012d" />
+   <img width="270" height="606" alt="Screenshot_1761220794" src="https://github.com/user-attachments/assets/53c207e1-9dcc-4770-8f0e-0fe5601a2dd2" />
 </p>
